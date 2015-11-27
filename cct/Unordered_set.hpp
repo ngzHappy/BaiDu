@@ -22,6 +22,9 @@ namespace cct{
         Unordered_set(Super && o):Super( std::move(o) ) {}
         Unordered_set(const Super & o):Super( o ) {}
         
+        Unordered_set&operator=(const Unordered_set&)=default;
+        Unordered_set&operator=(Unordered_set&&)=default;
+
         Unordered_set copy() const { return Unordered_set( *(*this) ); }
         Unordered_set unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         

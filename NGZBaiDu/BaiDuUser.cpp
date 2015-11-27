@@ -100,7 +100,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
 //获得baidu cookie
     getBaiduCookie( [pack]( auto cookies ,auto errorFunction ) mutable {
         auto * loginPack_ = pack.get();
-        loginPack_->baiduUserPrivate->cookies=std::move(cookies);
+        loginPack_->baiduUserPrivate->cookies = cookies;
 
     },
     pack
@@ -198,7 +198,7 @@ BaiDuUser::~BaiDuUser(){
 }
 
 void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
-        std::function< void(std::map<QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer) > fun ,
+        std::function< void(cct::Map<QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer) > fun ,
         BaiDuFinishedCallBackPointer fp){
 
     if( bool(fun) == false) {
@@ -268,6 +268,6 @@ void getBaiduToken(
         return;
     }
 
-
+    //
 
 }

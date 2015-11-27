@@ -22,6 +22,9 @@ namespace cct{
         Multiset(Super && o):Super( std::move(o) ) {}
         Multiset(const Super & o):Super( o ) {}
         
+        Multiset&operator=(const Multiset&)=default;
+        Multiset&operator=(Multiset&&)=default;
+
         Multiset copy() const { return Multiset( *(*this) ); }
         Multiset unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         

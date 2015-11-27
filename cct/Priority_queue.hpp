@@ -22,6 +22,9 @@ namespace cct{
         Priority_queue(Super && o):Super( std::move(o) ) {}
         Priority_queue(const Super & o):Super( o ) {}
         
+        Priority_queue&operator=(const Priority_queue&)=default;
+        Priority_queue&operator=(Priority_queue&&)=default;
+
         Priority_queue copy() const { return Priority_queue( *(*this) ); }
         Priority_queue unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         

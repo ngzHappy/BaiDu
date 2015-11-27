@@ -6,7 +6,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkCookie>
-#include <map>
+#include <Map.hpp>
 #include "../BaiDuUser.hpp"
 
 class BaiDuUserLoginNetworkAccessManager :
@@ -60,7 +60,7 @@ public:
     BaiDuUser * super ;
     BaiDuUserLoginNetworkAccessManager * manager ;
     QByteArray userAgent;
-    std::map< QByteArray, QNetworkCookie> cookies;
+    cct::Map< QByteArray, QNetworkCookie> cookies;
 
     BaiDuUserPrivate(BaiDuUser * s);
     ~BaiDuUserPrivate( );
@@ -69,7 +69,7 @@ public:
     void connectLoginPack(BaiDuUserLoginPack *);
 public:
     // ask  http://www.baidu.com  then set cookie
-    void getBaiduCookie( std::function<void(std::map< QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
+    void getBaiduCookie( std::function<void(cct::Map< QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
 
     //token
     void getBaiduToken( std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );

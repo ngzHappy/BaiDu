@@ -21,6 +21,9 @@ namespace cct{
         Unordered_map(Unordered_map &&)=default;
         Unordered_map(Super && o):Super( std::move(o) ) {}
         Unordered_map(const Super & o):Super( o ) {}
+
+        Unordered_map&operator=(const Unordered_map&)=default;
+        Unordered_map&operator=(Unordered_map&&)=default;
         
         Unordered_map copy() const { return Unordered_map( *(*this) ); }
         Unordered_map unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }

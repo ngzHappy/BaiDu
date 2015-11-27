@@ -22,6 +22,9 @@ namespace cct{
         Vector(Super && o):Super( std::move(o) ) {}
         Vector(const Super & o):Super( o ) {}
         
+        Vector&operator=(const Vector&)=default;
+        Vector&operator=(Vector&&)=default;
+
         Vector copy() const { return Vector( *(*this) ); }
         Vector unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         

@@ -22,6 +22,9 @@ namespace cct{
         Queue(Super && o):Super( std::move(o) ) {}
         Queue(const Super & o):Super( o ) {}
         
+        Queue&operator=(const Queue&)=default;
+        Queue&operator=(Queue&&)=default;
+
         Queue copy() const { return Queue( *(*this) ); }
         Queue unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         

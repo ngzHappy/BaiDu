@@ -22,6 +22,9 @@ namespace cct{
         Deque(Super && o):Super( std::move(o) ) {}
         Deque(const Super & o):Super( o ) {}
         
+        Deque&operator=(const Deque&)=default;
+        Deque&operator=(Deque&&)=default;
+
         Deque copy() const { return Deque( *(*this) ); }
         Deque unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         

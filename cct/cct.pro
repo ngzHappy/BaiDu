@@ -6,7 +6,8 @@ CONFIG += c++14
 SOURCES += main.cpp
 
 
-HEADERS +=$$PWD/Map.hpp
+HEADERS +=$$PWD/Map.hpp \
+    String.hpp
 HEADERS +=$$PWD/TempOptional.hpp
 HEADERS +=$$PWD/Multimap.hpp
 HEADERS +=$$PWD/Multiset.hpp

@@ -21,6 +21,9 @@ namespace cct{
         Map(Map &&)=default;
         Map(Super && o):Super( std::move(o) ) {}
         Map(const Super & o):Super( o ) {}
+
+        Map&operator=(const Map&)=default;
+        Map&operator=(Map&&)=default;
         
         Map copy() const { return Map( *(*this) ); }
         Map unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }

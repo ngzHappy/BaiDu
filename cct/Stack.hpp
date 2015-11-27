@@ -22,6 +22,9 @@ namespace cct{
         Stack(Super && o):Super( std::move(o) ) {}
         Stack(const Super & o):Super( o ) {}
         
+        Stack&operator=(const Stack&)=default;
+        Stack&operator=(Stack&&)=default;
+
         Stack copy() const { return Stack( *(*this) ); }
         Stack unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         

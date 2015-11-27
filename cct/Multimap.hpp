@@ -21,6 +21,9 @@ namespace cct{
         Multimap(Multimap &&)=default;
         Multimap(Super && o):Super( std::move(o) ) {}
         Multimap(const Super & o):Super( o ) {}
+
+        Multimap&operator=(const Multimap&)=default;
+        Multimap&operator=(Multimap&&)=default;
         
         Multimap copy() const { return Multimap( *(*this) ); }
         Multimap unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }

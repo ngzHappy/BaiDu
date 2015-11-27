@@ -22,6 +22,9 @@ namespace cct{
         Forward_list(Super && o):Super( std::move(o) ) {}
         Forward_list(const Super & o):Super( o ) {}
         
+        Forward_list&operator=(const Forward_list&)=default;
+        Forward_list&operator=(Forward_list&&)=default;
+
         Forward_list copy() const { return Forward_list( *(*this) ); }
         Forward_list unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
         
