@@ -94,6 +94,10 @@ namespace cct{
 
     };
 
+    typedef string String;
+    typedef wstring WString;
+    typedef u32string U32String;
+    typedef u16string U16String;
 }
 
 #endif // !
