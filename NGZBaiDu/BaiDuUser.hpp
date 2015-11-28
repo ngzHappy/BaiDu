@@ -2,6 +2,7 @@
 #define BAIDUUSER_ngz_HPP
 
 #include <functional>
+#include <memory>
 #include "ngzbaidu_global.hpp"
 
 class NGZBAIDUSHARED_EXPORT BaiDuVertifyCode{
@@ -53,7 +54,7 @@ public:
     friend class BaiDuUserPrivate;
 private:
 
-    BaiDuUserPrivate * thisp = nullptr ;
+    std::shared_ptr< BaiDuUserPrivate > thisp  ;
 };
 
 
