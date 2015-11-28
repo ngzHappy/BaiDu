@@ -11,7 +11,7 @@ void checkArgs( const A0 & a0 , const Args & ... args ) {
     {checkArgs<N>(a0); }return checkArgs<N+1>(  args ...  );
 }
 
-#if !defined check_args
+#if !defined(check_args)
 #define check_args( ... ) checkArgs( __VA_ARGS__ )
 #endif
 

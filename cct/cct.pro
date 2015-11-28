@@ -1,12 +1,13 @@
-TEMPLATE = app
-CONFIG += console
-CONFIG -= app_bundle
-CONFIG -= qt
-CONFIG += c++14
-SOURCES += main.cpp
+TEMPLATE  = app
+CONFIG   += console
+CONFIG   -= app_bundle
+CONFIG   -= qt
+CONFIG   += c++14
+SOURCES  += main.cpp
 
 
-HEADERS +=$$PWD/Map.hpp
+HEADERS +=$$PWD/Map.hpp \
+    FunctoinType.hpp
 HEADERS +=$$PWD/String.hpp
 HEADERS +=$$PWD/Function.hpp
 HEADERS +=$$PWD/TempOptional.hpp

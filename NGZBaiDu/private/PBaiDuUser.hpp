@@ -1,13 +1,22 @@
 ﻿#if !defined(PBAIDUUSER_ngz_HPP)
 #define PBAIDUUSER_ngz_HPP
 
+#include <functional>
 #include <QByteArray>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkCookie>
 #include <Map.hpp>
+#include <QVariant>
+#include <QNetworkReply>
 #include "../BaiDuUser.hpp"
+
+namespace cct{
+template<typename T>
+using Func =std::function<T>;
+}
+
 
 class BaiDuUserLoginNetworkAccessManager :
         public QNetworkAccessManager{
@@ -28,7 +37,7 @@ public:
     QString passWordBase;/*密码原始字符串*/
     QByteArray userName;/*用户名*/
     QByteArray passWord;/*密码*/
-    QByteArray rsaKey;/*rsa -- key*/
+    QByteArray publicKey;
 
 public:
     BaiDuUserLoginPack( QObject * );
@@ -60,19 +69,55 @@ public:
     BaiDuUser * super ;
     BaiDuUserLoginNetworkAccessManager * manager ;
     QByteArray userAgent;
-    cct::Map< QByteArray, QNetworkCookie> cookies;
+    cct::Map< QByteArray, QNetworkCookie > cookies;
+    QByteArray gid;
+    QByteArray token;
+    QByteArray rsaKey;/*rsa -- key*/
 
     BaiDuUserPrivate(BaiDuUser * s);
     ~BaiDuUserPrivate( );
 
     void setLogInPackData( BaiDuUserLoginPack * );
     void connectLoginPack(BaiDuUserLoginPack *);
+
+    void setChildrenPointer(QObject *  );
+    QVariant getAllCookies()const;
+
 public:
+    //update gid
+    void upDateGID(  BaiDuFinishedCallBackPointer);
+
     // ask  http://www.baidu.com  then set cookie
-    void getBaiduCookie( std::function<void(cct::Map< QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
+    void getBaiduCookie( cct::Func<void(cct::Map< QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
 
     //token
-    void getBaiduToken( std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );
+    void getBaiduToken( 
+        cct::Func< void(QByteArray,BaiDuFinishedCallBackPointer) >,
+        BaiDuFinishedCallBackPointer );
+
+    //rsa key
+    void getRSAKey(
+        cct::Func< void(QByteArray/*rsa key*/,QByteArray/*pub key*/,BaiDuFinishedCallBackPointer) >,
+        BaiDuFinishedCallBackPointer
+        );
+
+    //
+    static void encryptRSA(
+        QByteArray public_key,
+        QByteArray pass_Word,
+        cct::Func< void(QByteArray ,BaiDuFinishedCallBackPointer) >,
+        BaiDuFinishedCallBackPointer
+        );
+
+    //void 
+    void postLogin(
+        QByteArray user_name_,
+        QByteArray rsa_key_,
+        QByteArray enc_password_,
+        cct::Func< void(QNetworkReply *   ,BaiDuFinishedCallBackPointer) >,
+        BaiDuFinishedCallBackPointer
+        );
+
 private:
 
 signals:

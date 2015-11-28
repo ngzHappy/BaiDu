@@ -16,7 +16,8 @@ public:
     BaiDuFinishedCallBack(){}
     virtual ~BaiDuFinishedCallBack(){}
 
-    virtual void finished( bool ,QString  ){}
+    bool hasError = false;
+    virtual void finished(bool v, QString) { hasError=!v; }
 
 };
 

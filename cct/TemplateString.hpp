@@ -4,7 +4,7 @@
 /** . ? + $ ^ [ ] ( ) { } | \ / */
 #include <regex>
 #include <memory>
-#ifdef QT_CORE_LIB
+#ifdef QT_CORE_LIB__
 #include <QString>
 #include <QRegExp>
 #endif
@@ -106,7 +106,7 @@ public:
 
 };
 
-#ifdef QT_CORE_LIB
+#ifdef QT_CORE_LIB__
 template<>
 class TemplateString<QString> {
 public:
