@@ -1,4 +1,4 @@
-
+﻿
 #if !defined(VECTOR__HPP__CCT)
 #define VECTOR__HPP__CCT
 
@@ -24,6 +24,14 @@ namespace cct{
 
         Vector&operator=(const Vector&)=default;
         Vector&operator=(Vector&&)=default;
+
+        auto operator[]( size_type n )->decltype( this->get()->operator[](n)  ) {
+            return this->get()->operator[](n);
+        }
+
+        auto operator[]( size_type n )const ->decltype( this->_get_const()->operator[](n)  ) {
+            return this->_get_const()->operator[](n);
+        }
 
         Vector copy() const { return Vector( *(*this) ); }
         Vector unique_copy() const { if (this->use_count()<2) { return *this; }return copy(); }
