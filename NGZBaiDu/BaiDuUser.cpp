@@ -36,7 +36,7 @@ BaiDuUserLoginPack::~BaiDuUserLoginPack(){
 }
 
 BaiDuUser::BaiDuUserPrivate::~BaiDuUserPrivate( ){
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+   
     isOnDestory.store( true );
     {
         //clear all temp objects
@@ -48,7 +48,7 @@ BaiDuUser::BaiDuUserPrivate::~BaiDuUserPrivate( ){
 }
 
 void BaiDuUser::BaiDuUserPrivate::setLogInPackData( BaiDuUserLoginPack * p ){
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+    
     p->baiduUserPrivate = thisPointer;
     p->userName = p->userNameBase.toUtf8().toPercentEncoding();
 }
@@ -60,12 +60,12 @@ void BaiDuUserLoginPack::finished(bool v, QString r){
 }
 
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p){
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+     
     connect(p,&BaiDuUserLoginPack::loginFinished,this,&BaiDuUser::BaiDuUserPrivate::loginFinished );
 }
 
 void BaiDuUser::BaiDuUserPrivate::upDateGID(BaiDuFinishedCallBackPointer fp) {
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+    
     auto & gid__=this->gid;
     BaiDuUser::gid([ &gid__ ](auto ans, auto ) { gid__=ans; }, fp);
 }
@@ -75,7 +75,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
     QString passWord,
     BaiDuVertifyCode vertifyCode_
     ) {
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+    
     auto * loginPack=new BaiDuUserLoginPack(this);
     BaiDuUserLoginPackPointer pack(loginPack);
 
@@ -265,7 +265,7 @@ BaiDuUser::~BaiDuUser(){
 void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
         std::function< void(cct::Map<QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer) > fun ,
         BaiDuFinishedCallBackPointer fp){
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+    
     if( bool(fun) == false) {
         if(fp){ fp->finished(false,"call back is null " +QString( __func__ )); }
         return;
@@ -300,8 +300,8 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
          if (reply->error() != QNetworkReply::NoError) {
              if(fp){
                  fp->finished(false,"reply error");
-                 return;
              }
+             return;
          }
 
         auto * manager_ = thisPointer->manager;
@@ -348,7 +348,7 @@ namespace{
 }
 
 QVariant BaiDuUser::BaiDuUserPrivate::getAllCookies()const {
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+     
     QList< QNetworkCookie > ans;
     if ( cookies ) {
         for (const auto & i:*cookies) {
@@ -363,8 +363,7 @@ QVariant BaiDuUser::BaiDuUserPrivate::getAllCookies()const {
 void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
     std::function<void(QByteArray, BaiDuFinishedCallBackPointer)> fun,
     BaiDuFinishedCallBackPointer fp) {
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
-
+    
     if( bool(fun) == false) {
         if(fp){ fp->finished(false,"call back is null " +QString( __func__ )); }
         return;
@@ -457,12 +456,14 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
         );
 }
 
-//
+//获得rsa key 
 void BaiDuUser::BaiDuUserPrivate::getRSAKey(
-    cct::Func< void(QByteArray/*rsa key*/, QByteArray/*pub key*/, BaiDuFinishedCallBackPointer) > fun,
+    cct::Func< void(QByteArray/*rsa key*/, 
+    QByteArray/*pub key*/, 
+    BaiDuFinishedCallBackPointer) > fun,
     BaiDuFinishedCallBackPointer fp
     ) {
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+     
     if (bool(fun)==false) {
         if (fp) { fp->finished(false, "call back is null "+QString(__func__)); }
         return;
@@ -533,8 +534,10 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
             auto json=reply_->readAll();
             json=gzip::QCompressor::gzipDecompress(json);
 
-            if (fp) {
-                fp->finished(false, "BaiDuLogIn_Step3 : empty reply ! ");
+            if (json.isEmpty()) {
+                if (fp) {
+                    fp->finished(false,"BaiDuLogIn_Step3 : empty reply ! ");
+                }
                 return;
             }
 
@@ -548,8 +551,10 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
             publickey_=eng.evaluate(u8R"(bd__cbs__dmwxux["pubkey"])").toString();
             const auto key=eng.evaluate(u8R"(bd__cbs__dmwxux["key"])").toString();
 
-            if (fp) {
-                fp->finished(false, "BaiDuLogIn_Step3 : jsom reply error ! ");
+            if ( error != "0" ) {
+                if (fp) {
+                    fp->finished(false,"BaiDuLogIn_Step3 : jsom reply error ! ");
+                }
                 return;
             }
 
@@ -562,6 +567,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
 }
 
 //static function
+//使用rsa 加密
 void BaiDuUser::BaiDuUserPrivate::encryptRSA(
     QByteArray public_key_,
     QByteArray pass_word_,
@@ -582,8 +588,8 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
         if (!(QCA::ConvertGood==pubkey_isok_)) {
             if (fp) {
                 fp->finished(false, "qca get public key error!!");
-                return;
             }
+            return;
         }
 
         if (pubkey_.canEncrypt()==false) {
@@ -601,8 +607,8 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
         if (result_.isEmpty()) {
             if (fp) {
                 fp->finished(false, "BaiDuLogIn_Step3 : rsa encode error ! ");
-                return;
             }
+            return;
         }
 
         fun(result.toBase64().toPercentEncoding(), fp);
@@ -613,12 +619,13 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
 
 //unused
 void BaiDuUser::BaiDuUserPrivate::setChildrenPointer(QObject * o) {
-    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+     
     if ( o ) {
         connect(this,&QObject::destroyed,
             o, [o](QObject *) { o->blockSignals(true); o->deleteLater(); }
             );
     }
+
 }
 
 //void 
