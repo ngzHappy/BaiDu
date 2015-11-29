@@ -24,7 +24,7 @@ BaiDuUserLoginNetworkAccessManager::BaiDuUserLoginNetworkAccessManager( QObject 
 BaiDuUser::BaiDuUserPrivate::BaiDuUserPrivate(std::shared_ptr<BaiDuUserPrivate> o):
 thisPointer(o){
     this->__all__bits__ = char(0);
-    manager = new BaiDuUserLoginNetworkAccessManager(nullptr ) ;
+    manager =  std::make_shared<BaiDuUserLoginNetworkAccessManager>(nullptr ) ;
 }
 
 BaiDuUserLoginPack::BaiDuUserLoginPack(QObject * o)
@@ -43,7 +43,7 @@ BaiDuUser::BaiDuUserPrivate::~BaiDuUserPrivate( ){
         std::unique_lock< std::recursive_mutex > __( this->tempObjectsMutex );
         tempObjects=nullptr;
     }
-    delete manager;
+
     manager=nullptr;
 }
 
@@ -298,7 +298,7 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
              return;
          }
 
-        auto * manager_ = thisPointer->manager;
+        auto manager_ = thisPointer->manager;
         auto allCookies = manager_->cookieJar()->cookiesForUrl(reply->url());            
 
         for (const auto & i : reply->rawHeaderPairs()) {
@@ -480,7 +480,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     req.setRawHeader("User-Agent", userAgent);
     req.setRawHeader("Accept-Encoding", "gzip, deflate");
 
-    auto * manager_=manager;
+    auto manager_=manager;
     auto replyNext__=std::shared_ptr<QNetworkReply>(manager_->get(req),
         [](QNetworkReply * d) { d->deleteLater(); }
         );
@@ -604,10 +604,11 @@ void BaiDuUser::BaiDuUserPrivate::setChildrenPointer(QObject * o) {
 
 //void 
 void  BaiDuUser::BaiDuUserPrivate::postLogin(
-    QByteArray user_name_,
-    QByteArray rsa_key_,
+    QByteArray user_name_   ,
+    QByteArray rsa_key_     ,
     QByteArray enc_password_,
-    cct::Func< void(QNetworkReply *, BaiDuFinishedCallBackPointer) > fun,
+    QByteArray token_       ,
+    cct::Func< void(std::shared_ptr< std::weak_ptr<QNetworkReply> >  , BaiDuFinishedCallBackPointer) > fun,
     BaiDuFinishedCallBackPointer fp
     ) {
 
@@ -616,7 +617,89 @@ void  BaiDuUser::BaiDuUserPrivate::postLogin(
         return;
     }
 
+    const static constexpr char * staticPage = "https%3A%2F%2Fwww.baidu.com%2Fcache%2Fuser%2Fhtml%2Fv3Jump.html";
+    const static constexpr char * u = "https%3A%2F%2Fwww.baidu.com%2F";
+    const static constexpr char * splogin = "rate";
+    const static constexpr char * logLoginType = "pc_loginDialog";
+    const static constexpr char * safeflg="0";
+    const static constexpr char * detect="1";
+    const static constexpr char * quick_user="0";
+    const static constexpr char * memberPass="on";
+    const static constexpr char * loginType="dialogLogin";
+    const static constexpr bool isPhone=false;
+    const static constexpr bool loginmerge=true;
 
+    /* 发起登录请求 */
+    QUrl url("https://passport.baidu.com/v2/api/?login");
+    QNetworkRequest req(url);
+    QByteArray postData = QByteArray("staticpage=") + staticPage;
+    
+    QByteArray current_time_;
+
+    BaiDuUser::currentTimer([&current_time_](auto ans,auto) {current_time_=ans; },fp);
+    if (fp) { if (fp->hasError) { return; } }
+
+    {
+        std::pair< const QByteArray, const QByteArray > postData_[]{
+            {"charset","utf-8"},
+            {"token",token_ },
+            {"tpl","mn"},
+            {"subpro",""},
+            {"apiver","v3"},
+            {"tt",current_time_ },
+            {"codestring", this->vertifyCode.id },/*验证码*/
+            {"safeflg",safeflg},
+            {"u", u },
+            {"isPhone",isPhone ? "true" : "false"},
+            {"detect", detect},
+            {"gid", this->gid },
+            {"quick_user",quick_user},
+            {"logintype",loginType},
+            {"logLoginType",logLoginType },
+            {"idc",""},
+            {"loginmerge",loginmerge ? "true" : "false"},
+            {"splogin",splogin },
+            {"username",user_name_ },
+            {"password",enc_password_ },
+            {"verifycode",this->vertifyCode.ans },/*验证码id*/
+            {"mem_pass",memberPass},
+            {"rsakey",rsa_key_ },
+            {"crypttype","12"},
+            {"ppui_logintime",QByteArray::number( 10000 + (rand()%9999)) },/*随机数*/
+            {"countrycode",""},
+            {"callback","parent.bd__pcbs__s09032"}
+        };
+        postData = toHtmlUrl(postData, std::begin(postData_), std::end(postData_));
+    }
+
+    req.setHeader(QNetworkRequest::CookieHeader, this->getAllCookies() );
+    req.setRawHeader("Accept", "text/html, application/xhtml+xml, */*");
+    req.setRawHeader("Referer", "https://www.baidu.com/");
+    req.setRawHeader("Accept-Language", "zh-CN");
+    req.setRawHeader("User-Agent", this->userAgent );
+    req.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    req.setRawHeader("Accept-Encoding", "gzip, deflate");
+
+    auto manager_   = this->manager ;
+    auto * replyNext_ = manager_->post( req,postData );
+    auto replyNext = std::shared_ptr<QNetworkReply>( replyNext_ ,
+        [  ](QNetworkReply * d) {  d->deleteLater();  });
+
+    manager_->addReply( replyNext );
+    std::weak_ptr< BaiDuUserLoginNetworkAccessManager > wm_( manager_ );
+
+    std::shared_ptr< std::weak_ptr<QNetworkReply> > ans(
+        new std::weak_ptr<QNetworkReply>( replyNext ),
+        [ wm_ ]( std::weak_ptr<QNetworkReply> * d ) mutable {
+        auto m_= wm_.lock();//get a copy of manager
+        auto d_= d->lock() ;//get a copy of data
+        if ( d_ ) { if (m_) { m_->removeReply( d_ ); } }//remove data
+        delete d;//delete watcher
+    }
+        );
+
+    //结束回调
+    return fun( ans ,fp );
 
 }
 

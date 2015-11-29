@@ -42,12 +42,13 @@ public:
 
     }
 
-    void removeReply( std::shared_ptr<QNetworkReply> r ) {
+    template< typename Tp >
+    void removeReply( Tp r ) {
         {
             const auto __replys{ replys };
             if (replys) {
                 std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
-                replys->erase(r);
+                replys->erase( r );
             }
         }
     }
@@ -106,7 +107,7 @@ public:
     };
     
     std::weak_ptr< BaiDuUserPrivate > thisPointer;
-    BaiDuUserLoginNetworkAccessManager * manager ;
+    std::shared_ptr< BaiDuUserLoginNetworkAccessManager> manager ;
     QByteArray userAgent;
     cct::Map< QByteArray, QNetworkCookie > cookies;
     std::recursive_mutex tempObjectsMutex;
@@ -114,6 +115,7 @@ public:
     QByteArray gid;
     QByteArray token;
     QByteArray rsaKey;/*rsa -- key*/
+    BaiDuVertifyCode vertifyCode;
     std::atomic< bool > isOnDestory{ false };
 
     bool onDestory() const volatile { return isOnDestory.load(); }
@@ -158,7 +160,8 @@ public:
         QByteArray user_name_,
         QByteArray rsa_key_,
         QByteArray enc_password_,
-        cct::Func< void(QNetworkReply *   ,BaiDuFinishedCallBackPointer) >,
+        QByteArray token_,
+        cct::Func< void( std::shared_ptr< std::weak_ptr<QNetworkReply> >  ,BaiDuFinishedCallBackPointer) >,
         BaiDuFinishedCallBackPointer
         );
 
