@@ -117,9 +117,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
         auto pack__ = loginPack_->baiduUserPrivate.lock();
         
         if (bool(pack__) == false) {
-            if (errorFunction) {
-                errorFunction->finished(false,"endl");
-            }
+            if (errorFunction) { errorFunction->finished(false,"endl"); }
             return;
         }
 
@@ -289,18 +287,14 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
         auto reply=reply_.lock();
 
         if ( (bool(thisPointer)==false)||(bool(reply)==false) ) {
-            if(fp){
-                fp->finished(false,"endl");
-            }
+            if(fp){ fp->finished(false,"endl"); }
             return;
         }
 
         thisPointer->manager->removeReply( reply );
 
          if (reply->error() != QNetworkReply::NoError) {
-             if(fp){
-                 fp->finished(false,"reply error");
-             }
+             if(fp){ fp->finished(false,"reply error"); }
              return;
          }
 
@@ -322,9 +316,7 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
         }
 
         if (ans.find("BAIDUID") == ans.end()) {
-            if(fp){
-                fp->finished(false,"can not find BAIDUID");
-            }
+            if(fp){ fp->finished(false,"can not find BAIDUID"); }
             return;
         }
 
@@ -411,16 +403,12 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
         auto thisPointer=thisPointer_.lock();
 
         if ( bool(reply_)==false ) { 
-            if ( fp ) {
-                fp->finished(false,"null""endl");
-            }
+            if ( fp ) { fp->finished(false,"null""endl"); }
             return;
         }
 
         if ( bool(thisPointer)==false ) { 
-            if ( fp ) {
-                fp->finished(false,"null""endl");
-            }
+            if ( fp ) { fp->finished(false,"null""endl"); }
             return;
         }
 
@@ -430,9 +418,7 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
         auto json = reply_->readAll();            
 
         if (json.isEmpty()) {
-            if ( fp ) {
-                fp->finished(false,"null""BaiDuUser::BaiDuUserPrivate::getBaiduToken");
-            }
+            if ( fp ) { fp->finished(false,"null""BaiDuUser::BaiDuUserPrivate::getBaiduToken");}
             return;
         }
 
@@ -510,16 +496,12 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
         auto thisPointer = thisPointer_.lock();
 
         if ( bool(replyNext )==false ) { 
-            if ( fp ) {
-                fp->finished(false,"null""endl");
-            }
+            if ( fp ) { fp->finished(false,"null""endl"); }
             return;
         }
 
         if ( bool(thisPointer)==false ) { 
-            if ( fp ) {
-                fp->finished(false,"null""endl");
-            }
+            if ( fp ) { fp->finished(false,"null""endl"); }
             return;
         }
 
@@ -535,9 +517,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
             json=gzip::QCompressor::gzipDecompress(json);
 
             if (json.isEmpty()) {
-                if (fp) {
-                    fp->finished(false,"BaiDuLogIn_Step3 : empty reply ! ");
-                }
+                if (fp) { fp->finished(false,"BaiDuLogIn_Step3 : empty reply ! "); }
                 return;
             }
 
@@ -552,9 +532,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
             const auto key=eng.evaluate(u8R"(bd__cbs__dmwxux["key"])").toString();
 
             if ( error != "0" ) {
-                if (fp) {
-                    fp->finished(false,"BaiDuLogIn_Step3 : jsom reply error ! ");
-                }
+                if (fp) {fp->finished(false,"BaiDuLogIn_Step3 : jsom reply error ! "); }
                 return;
             }
 
@@ -586,14 +564,12 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
             QCA::RSAPublicKey::fromPEM(public_key_, &pubkey_isok_);
 
         if (!(QCA::ConvertGood==pubkey_isok_)) {
-            if (fp) {
-                fp->finished(false, "qca get public key error!!");
-            }
+            if (fp) {fp->finished(false, "qca get public key error!!"); }
             return;
         }
 
         if (pubkey_.canEncrypt()==false) {
-            fp->finished(false, "BaiDuLogIn_Step3 : rsa error ! ");
+            if (fp) { fp->finished(false,"BaiDuLogIn_Step3 : rsa error ! "); }
             return;
         }
 
@@ -605,9 +581,7 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
 
         QByteArray result=result_.toByteArray();
         if (result_.isEmpty()) {
-            if (fp) {
-                fp->finished(false, "BaiDuLogIn_Step3 : rsa encode error ! ");
-            }
+            if (fp) {fp->finished(false, "BaiDuLogIn_Step3 : rsa encode error ! ");}
             return;
         }
 
