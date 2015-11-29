@@ -33,9 +33,8 @@ public:
 
     void addReply( std::shared_ptr<QNetworkReply> r ) {
         {
-            const auto __replys{ replys };
+            std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
             if (replys) {
-                std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
                 replys->insert(r);
             }
         }
@@ -45,9 +44,8 @@ public:
     template< typename Tp >
     void removeReply( Tp r ) {
         {
-            const auto __replys{ replys };
+            std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
             if (replys) {
-                std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
                 replys->erase( r );
             }
         }
@@ -55,9 +53,8 @@ public:
 
     ~BaiDuUserLoginNetworkAccessManager() {
         {
-            const auto __replys{ replys };
+            std::unique_lock<std::recursive_mutex> __lock;
             if (replys) {
-                std::unique_lock<std::recursive_mutex> __lock;
                 replys.reset();//close all replys
             }
         }
@@ -71,6 +68,7 @@ class NGZBAIDUSHARED_EXPORT BaiDuUserLoginPack :
     Q_OBJECT
 public:
     
+    bool isValueSet=false;
     cct::SharedFromSuper< BaiDuUser::BaiDuUserPrivate > baiduUserPrivate  ;
     BaiDuVertifyCode vertifyCode;/*验证码*/
     QString userNameBase;/*用户名原始字符串*/
@@ -106,7 +104,7 @@ public:
         char __all__bits__;
     };
     
-    std::weak_ptr< BaiDuUserPrivate > thisPointer;
+    cct::SharedFromSuper< BaiDuUserPrivate > thisPointer;
     std::shared_ptr< BaiDuUserLoginNetworkAccessManager> manager ;
     QByteArray userAgent;
     cct::Map< QByteArray, QNetworkCookie > cookies;
@@ -131,7 +129,7 @@ public:
 
 public:
     //update gid
-    void upDateGID(  BaiDuFinishedCallBackPointer);
+    void upDateGID(  BaiDuFinishedCallBackPointer );
 
     // ask  http://www.baidu.com  then set cookie
     void getBaiduCookie( cct::Func<void(cct::Map< QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
@@ -165,10 +163,18 @@ public:
         BaiDuFinishedCallBackPointer
         );
 
+    //
+    void onLoginFinished(
+        std::shared_ptr< std::weak_ptr<QNetworkReply> >  ,
+        cct::Func< void(BaiDuVertifyCode,BaiDuFinishedCallBackPointer) > ,/*验证码回调*/
+        BaiDuFinishedCallBackPointer                                      /*结果回调,true false*/
+        );
+
 private:
 
 signals:
     void loginFinished( bool,QString );
+    void setVertifyCode(QByteArray id_,QByteArray url_);
 public slots:
     void login(
             QString userName,

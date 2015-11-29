@@ -8,8 +8,10 @@ template< typename T >
 class SharedFromSuper {
     std::weak_ptr<T> super;
 public:
-
+    ~SharedFromSuper() {}
     SharedFromSuper( ) {}
+    SharedFromSuper(const SharedFromSuper &) = default;
+    SharedFromSuper(SharedFromSuper &&) = default;
     SharedFromSuper( decltype(nullptr) ) {}
     SharedFromSuper( std::weak_ptr<T> && u ):super( std::move(u) ) {}
     SharedFromSuper( const std::weak_ptr<T> & u ):super( u ) {}
@@ -42,6 +44,7 @@ public:
         if (ans) { if ( ans->onDestory() ){ return std::shared_ptr<T>(); }  }
         return ans;
     }
+
 };
 
 }
