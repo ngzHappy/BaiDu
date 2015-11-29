@@ -6,9 +6,9 @@ CONFIG   += c++14
 SOURCES  += main.cpp
 
 
-HEADERS +=$$PWD/Map.hpp \
-    FunctoinType.hpp \
-    SharedFromSuper.hpp
+HEADERS +=$$PWD/Map.hpp
+HEADERS +=$$PWD/FunctoinType.hpp
+HEADERS +=$$PWD/SharedFromSuper.hpp
 HEADERS +=$$PWD/String.hpp
 HEADERS +=$$PWD/Function.hpp
 HEADERS +=$$PWD/TempOptional.hpp
