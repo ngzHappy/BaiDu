@@ -1,6 +1,8 @@
 ﻿#if !defined(PBAIDUUSER_ngz_HPP)
 #define PBAIDUUSER_ngz_HPP
 
+#include <mutex>
+#include <atomic>
 #include <functional>
 #include <QByteArray>
 #include <QNetworkAccessManager>
@@ -8,8 +10,10 @@
 #include <QNetworkRequest>
 #include <QNetworkCookie>
 #include <Map.hpp>
+#include <Set.hpp>
 #include <QVariant>
 #include <QNetworkReply>
+#include <SharedFromSuper.hpp>
 #include "../BaiDuUser.hpp"
 
 namespace cct{
@@ -21,8 +25,43 @@ using Func =std::function<T>;
 class BaiDuUserLoginNetworkAccessManager :
         public QNetworkAccessManager{
     Q_OBJECT
+private:
+    std::recursive_mutex reply_mutex;
+    cct::Set< std::shared_ptr<QNetworkReply> > replys;
 public:
-    BaiDuUserLoginNetworkAccessManager( QObject * ) ;
+    BaiDuUserLoginNetworkAccessManager( QObject * ) ;     
+
+    void addReply( std::shared_ptr<QNetworkReply> r ) {
+        {
+            const auto __replys{ replys };
+            if (replys) {
+                std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
+                replys->insert(r);
+            }
+        }
+
+    }
+
+    void removeReply( std::shared_ptr<QNetworkReply> r ) {
+        {
+            const auto __replys{ replys };
+            if (replys) {
+                std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
+                replys->erase(r);
+            }
+        }
+    }
+
+    ~BaiDuUserLoginNetworkAccessManager() {
+        {
+            const auto __replys{ replys };
+            if (replys) {
+                std::unique_lock<std::recursive_mutex> __lock;
+                replys.reset();//close all replys
+            }
+        }
+
+    }
 };
 
 class NGZBAIDUSHARED_EXPORT BaiDuUserLoginPack :
@@ -30,15 +69,15 @@ class NGZBAIDUSHARED_EXPORT BaiDuUserLoginPack :
         public BaiDuFinishedCallBack {
     Q_OBJECT
 public:
-    class BaiDuUser * baiduUser = nullptr ;
-    class BaiDuUser::BaiDuUserPrivate * baiduUserPrivate = nullptr ;
+    
+    cct::SharedFromSuper< BaiDuUser::BaiDuUserPrivate > baiduUserPrivate  ;
     BaiDuVertifyCode vertifyCode;/*验证码*/
     QString userNameBase;/*用户名原始字符串*/
     QString passWordBase;/*密码原始字符串*/
     QByteArray userName;/*用户名*/
     QByteArray passWord;/*密码*/
     QByteArray publicKey;
-
+    
 public:
     BaiDuUserLoginPack( QObject * );
     ~BaiDuUserLoginPack();
@@ -65,16 +104,21 @@ public:
         };
         char __all__bits__;
     };
-
-    BaiDuUser * super ;
+    
+    std::weak_ptr< BaiDuUserPrivate > thisPointer;
     BaiDuUserLoginNetworkAccessManager * manager ;
     QByteArray userAgent;
     cct::Map< QByteArray, QNetworkCookie > cookies;
+    std::recursive_mutex tempObjectsMutex;
+    cct::Set< std::shared_ptr<QObject> > tempObjects;
     QByteArray gid;
     QByteArray token;
     QByteArray rsaKey;/*rsa -- key*/
+    std::atomic< bool > isOnDestory{ false };
 
-    BaiDuUserPrivate(BaiDuUser * s);
+    bool onDestory() const volatile { return isOnDestory.load(); }
+
+    BaiDuUserPrivate( std::shared_ptr<BaiDuUserPrivate> );
     ~BaiDuUserPrivate( );
 
     void setLogInPackData( BaiDuUserLoginPack * );

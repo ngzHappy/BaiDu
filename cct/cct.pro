@@ -7,7 +7,8 @@ SOURCES  += main.cpp
 
 
 HEADERS +=$$PWD/Map.hpp \
-    FunctoinType.hpp
+    FunctoinType.hpp \
+    SharedFromSuper.hpp
 HEADERS +=$$PWD/String.hpp
 HEADERS +=$$PWD/Function.hpp
 HEADERS +=$$PWD/TempOptional.hpp

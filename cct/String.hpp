@@ -10,15 +10,15 @@ namespace cct{
     private:
         typedef std::shared_ptr< std::string > Super;
     public:
-
-        template<typename ... Ta>
-        string(Ta && ... args):Super(new class std::string( std::forward<Ta>(args) ... ) ) {}
+                
         string( decltype(nullptr) ) {}
         string() :Super( new std::string ){}
         string(const string &)=default;
         string(string &&)=default;
         string(Super && o):Super( std::move(o) ) {}
         string(const Super & o):Super( o ) {}
+        string(const std::string & o):Super( new std::string(o) ) {}
+        string(std::string && o):Super( new std::string( std::move(o) ) ) {}
 
         string&operator=(const string&)=default;
         string&operator=(string&&)=default;
@@ -33,14 +33,14 @@ namespace cct{
         typedef std::shared_ptr< std::wstring > Super;
     public:
 
-        template<typename ... Ta>
-        wstring(Ta && ... args):Super(new class std::wstring( std::forward<Ta>(args) ... ) ) {}
         wstring( decltype(nullptr) ) {}
         wstring() :Super( new std::wstring ){}
         wstring(const wstring &)=default;
         wstring(wstring &&)=default;
         wstring(Super && o):Super( std::move(o) ) {}
         wstring(const Super & o):Super( o ) {}
+        wstring(const std::wstring & o):Super( new std::wstring(o) ) {}
+        wstring(std::wstring && o):Super( new std::wstring( std::move(o) ) ) {}
 
         wstring&operator=(const wstring&)=default;
         wstring&operator=(wstring&&)=default;
@@ -55,14 +55,14 @@ namespace cct{
         typedef std::shared_ptr< std::u16string > Super;
     public:
 
-        template<typename ... Ta>
-        u16string(Ta && ... args):Super(new class std::u16string( std::forward<Ta>(args) ... ) ) {}
         u16string( decltype(nullptr) ) {}
         u16string() :Super( new std::u16string ){}
         u16string(const u16string &)=default;
         u16string(u16string &&)=default;
         u16string(Super && o):Super( std::move(o) ) {}
         u16string(const Super & o):Super( o ) {}
+        u16string(const std::u16string & o):Super( new std::u16string(o) ) {}
+        u16string(std::u16string && o):Super( new std::u16string( std::move(o) ) ) {}
 
         u16string&operator=(const  u16string&)=default;
         u16string&operator=( u16string&&)=default;
@@ -77,14 +77,14 @@ namespace cct{
         typedef std::shared_ptr< std::u32string > Super;
     public:
 
-        template<typename ... Ta>
-        u32string(Ta && ... args):Super(new class std::u32string( std::forward<Ta>(args) ... ) ) {}
         u32string( decltype(nullptr) ) {}
         u32string() :Super( new std::u32string ){}
         u32string(const u32string &)=default;
         u32string(u32string &&)=default;
         u32string(Super && o):Super( std::move(o) ) {}
         u32string(const Super & o):Super( o ) {}
+        u32string(const std::u32string & o):Super( new std::u32string(o) ) {}
+        u32string(std::u32string && o):Super( new std::u32string( std::move(o) ) ) {}
 
         u32string&operator=(const  u32string&)=default;
         u32string&operator=( u32string&&)=default;

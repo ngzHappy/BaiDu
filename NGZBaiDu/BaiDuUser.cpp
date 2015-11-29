@@ -21,10 +21,10 @@ namespace {
 BaiDuUserLoginNetworkAccessManager::BaiDuUserLoginNetworkAccessManager( QObject * o)
     :QNetworkAccessManager(o){}
 
-BaiDuUser::BaiDuUserPrivate::BaiDuUserPrivate(BaiDuUser * s):
-    super(s){
+BaiDuUser::BaiDuUserPrivate::BaiDuUserPrivate(std::shared_ptr<BaiDuUserPrivate> o):
+thisPointer(o){
     this->__all__bits__ = char(0);
-    manager = new BaiDuUserLoginNetworkAccessManager(this);
+    manager = new BaiDuUserLoginNetworkAccessManager(nullptr ) ;
 }
 
 BaiDuUserLoginPack::BaiDuUserLoginPack(QObject * o)
@@ -36,25 +36,36 @@ BaiDuUserLoginPack::~BaiDuUserLoginPack(){
 }
 
 BaiDuUser::BaiDuUserPrivate::~BaiDuUserPrivate( ){
-
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+    isOnDestory.store( true );
+    {
+        //clear all temp objects
+        std::unique_lock< std::recursive_mutex > __( this->tempObjectsMutex );
+        tempObjects=nullptr;
+    }
+    delete manager;
+    manager=nullptr;
 }
 
 void BaiDuUser::BaiDuUserPrivate::setLogInPackData( BaiDuUserLoginPack * p ){
-    p->baiduUser = super ;
-    p->baiduUserPrivate = this;
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
+    p->baiduUserPrivate = thisPointer;
     p->userName = p->userNameBase.toUtf8().toPercentEncoding();
 }
 
 void BaiDuUserLoginPack::finished(bool v, QString r){
+    //TODO : log in finished
     hasError = !v;
-    loginFinished(v,r);
+    emit loginFinished(v,r);
 }
 
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p){
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
     connect(p,&BaiDuUserLoginPack::loginFinished,this,&BaiDuUser::BaiDuUserPrivate::loginFinished );
 }
 
 void BaiDuUser::BaiDuUserPrivate::upDateGID(BaiDuFinishedCallBackPointer fp) {
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
     auto & gid__=this->gid;
     BaiDuUser::gid([ &gid__ ](auto ans, auto ) { gid__=ans; }, fp);
 }
@@ -64,7 +75,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
     QString passWord,
     BaiDuVertifyCode vertifyCode_
     ) {
-
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
     auto * loginPack=new BaiDuUserLoginPack(this);
     BaiDuUserLoginPackPointer pack(loginPack);
 
@@ -103,7 +114,16 @@ void BaiDuUser::BaiDuUserPrivate::login(
         BCP_ errorFunction) mutable {
 
         auto * loginPack_=pack.get();
-        loginPack_->baiduUserPrivate->cookies=cookies;
+        auto pack__ = loginPack_->baiduUserPrivate.lock();
+        
+        if (bool(pack__) == false) {
+            if (errorFunction) {
+                errorFunction->finished(false,"endl");
+            }
+            return;
+        }
+
+        pack__->cookies=cookies;
 
         //获得baidu token
         this->getBaiduToken([this, pack](
@@ -129,7 +149,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
                     QByteArray enc_password_,
                     BCP_ errorFunction
                     ) mutable {
-                    if (errorFunction) { if (errorFunction->hasError) { return; } }
+                    
 
                 },
                     errorFunction
@@ -146,13 +166,14 @@ void BaiDuUser::BaiDuUserPrivate::login(
 
 }
 
-BaiDuUser::BaiDuUser( QObject * o)
-    :QObject(o){
-
-    thisp = new BaiDuUserPrivate(this);
-
-    connect(this,&BaiDuUser::login,thisp,&BaiDuUser::BaiDuUserPrivate::login );
-    connect(thisp,&BaiDuUser::BaiDuUserPrivate::loginFinished,this,&BaiDuUser::loginFinished);
+BaiDuUser::BaiDuUser(QObject * o):QObject(o) {
+    //创建子对象
+    {
+        thisp=std::make_shared<BaiDuUserPrivate>(thisp);
+        thisp->thisPointer=thisp;
+    }
+    connect(this,&BaiDuUser::login,thisp.get(),&BaiDuUser::BaiDuUserPrivate::login);
+    connect(thisp.get(),&BaiDuUser::BaiDuUserPrivate::loginFinished,this,&BaiDuUser::loginFinished);
 }
 
 void BaiDuUser::gid(
@@ -232,13 +253,19 @@ void BaiDuUser::currentTimer(
 }
 
 BaiDuUser::~BaiDuUser(){
-    delete thisp;
+    
+    const auto __copy=thisp;
+    if (thisp) {
+        thisp->isOnDestory.store(true );
+        thisp.reset();
+    }
+
 }
 
 void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
         std::function< void(cct::Map<QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer) > fun ,
         BaiDuFinishedCallBackPointer fp){
-
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
     if( bool(fun) == false) {
         if(fp){ fp->finished(false,"call back is null " +QString( __func__ )); }
         return;
@@ -248,18 +275,27 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
     const QUrl url("http://www.baidu.com");
     QNetworkRequest req(url);
     req.setRawHeader("User-Agent", this->userAgent);
-    auto * reply = manager->get( req );
-
-    //设置reply生命周期
-    connect(this,&QObject::destroyed,reply,[reply](QObject *){
-        reply->blockSignals(true);
-        reply->deleteLater();
-    });
+    auto  reply__ = std::shared_ptr<QNetworkReply>( manager->get( req ) ,
+        [](QNetworkReply * d) {d->deleteLater(); });
+    std::weak_ptr<QNetworkReply> reply_(reply__);
+    manager->addReply( reply__ );
+    auto thisPointer_=thisPointer;
 
     //获得返回值
-    connect(reply,&QNetworkReply::finished,
-            this,[this,fun,fp,reply](){
-        cct::ObjectDelete<QObject> _dr( reply );
+    connect( reply__.get(),&QNetworkReply::finished,
+            this,[ thisPointer_ , fun , fp , reply_ ](){
+
+        auto thisPointer=thisPointer_.lock();
+        auto reply=reply_.lock();
+
+        if ( (bool(thisPointer)==false)||(bool(reply)==false) ) {
+            if(fp){
+                fp->finished(false,"endl");
+            }
+            return;
+        }
+
+        thisPointer->manager->removeReply( reply );
 
          if (reply->error() != QNetworkReply::NoError) {
              if(fp){
@@ -268,8 +304,8 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
              }
          }
 
-        auto * manager_ = manager;
-        auto allCookies = manager_->cookieJar()->cookiesForUrl(reply->url());
+        auto * manager_ = thisPointer->manager;
+        auto allCookies = manager_->cookieJar()->cookiesForUrl(reply->url());            
 
         for (const auto & i : reply->rawHeaderPairs()) {
             if (i.first == "Set-Cookie") {
@@ -312,6 +348,7 @@ namespace{
 }
 
 QVariant BaiDuUser::BaiDuUserPrivate::getAllCookies()const {
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
     QList< QNetworkCookie > ans;
     if ( cookies ) {
         for (const auto & i:*cookies) {
@@ -326,6 +363,7 @@ QVariant BaiDuUser::BaiDuUserPrivate::getAllCookies()const {
 void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
     std::function<void(QByteArray, BaiDuFinishedCallBackPointer)> fun,
     BaiDuFinishedCallBackPointer fp) {
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
 
     if( bool(fun) == false) {
         if(fp){ fp->finished(false,"call back is null " +QString( __func__ )); }
@@ -358,22 +396,45 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
     req.setRawHeader("User-Agent", this->userAgent );
     req.setHeader(QNetworkRequest::CookieHeader, getAllCookies() );
 
-    auto * replyNext = manager->get(req);
+    // 
+    auto replyNext_ = std::shared_ptr<QNetworkReply>( manager->get(req),
+        [](QNetworkReply * d) { d->deleteLater(); }
+        );
 
-    //设置对象生命周期小于this
-    setChildrenPointer(replyNext);
+    manager->addReply( replyNext_ ); 
+    std::weak_ptr<QNetworkReply> replyNext( replyNext_ );
+    auto thisPointer_=thisPointer;
 
     //读取返回值
-    connect(replyNext,&QNetworkReply::finished,
-        this, [replyNext,this,fp,fun]() mutable{
+    connect( replyNext_.get(),&QNetworkReply::finished,
+        this, [replyNext,thisPointer_,fp,fun]() mutable{
+        auto reply_=replyNext.lock();
+        auto thisPointer=thisPointer_.lock();
 
-        cct::ObjectDelete<QObject> _dt( replyNext );
+        if ( bool(reply_)==false ) { 
+            if ( fp ) {
+                fp->finished(false,"null""endl");
+            }
+            return;
+        }
 
-        auto json = replyNext->readAll();
+        if ( bool(thisPointer)==false ) { 
+            if ( fp ) {
+                fp->finished(false,"null""endl");
+            }
+            return;
+        }
+
+        //delete
+        thisPointer->manager->removeReply( reply_ );
+
+        auto json = reply_->readAll();            
+
         if (json.isEmpty()) {
             if ( fp ) {
                 fp->finished(false,"null""BaiDuUser::BaiDuUserPrivate::getBaiduToken");
             }
+            return;
         }
 
         json = json.mid(json.indexOf("(") + 1);
@@ -401,7 +462,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     cct::Func< void(QByteArray/*rsa key*/, QByteArray/*pub key*/, BaiDuFinishedCallBackPointer) > fun,
     BaiDuFinishedCallBackPointer fp
     ) {
-
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
     if (bool(fun)==false) {
         if (fp) { fp->finished(false, "call back is null "+QString(__func__)); }
         return;
@@ -433,14 +494,38 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     req.setRawHeader("Accept-Encoding", "gzip, deflate");
 
     auto * manager_=manager;
-    auto * replyNext=manager_->get(req);
+    auto replyNext__=std::shared_ptr<QNetworkReply>(manager_->get(req),
+        [](QNetworkReply * d) { d->deleteLater(); }
+        );
+    manager->addReply( replyNext__ );
+    std::weak_ptr<QNetworkReply> replyNext_( replyNext__ );
+    // 
+    auto thisPointer_=thisPointer;
 
-    setChildrenPointer(replyNext);
+    connect( replyNext__.get(), &QNetworkReply::finished,
+        this, [replyNext_, thisPointer_, fp, fun]() mutable {
+        
+        auto replyNext = replyNext_.lock();
+        auto thisPointer = thisPointer_.lock();
 
-    connect(replyNext, &QNetworkReply::finished,
-        this, [replyNext, this, fp, fun]() mutable {
-        cct::ObjectDelete<QObject> _dt(replyNext);
-        auto * reply_=replyNext;
+        if ( bool(replyNext )==false ) { 
+            if ( fp ) {
+                fp->finished(false,"null""endl");
+            }
+            return;
+        }
+
+        if ( bool(thisPointer)==false ) { 
+            if ( fp ) {
+                fp->finished(false,"null""endl");
+            }
+            return;
+        }
+
+        //delete
+        thisPointer->manager->removeReply( replyNext );
+
+        auto * reply_=replyNext.get();
 
         //
         {
@@ -476,17 +561,19 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
 
 }
 
+//static function
 void BaiDuUser::BaiDuUserPrivate::encryptRSA(
     QByteArray public_key_,
     QByteArray pass_word_,
     cct::Func< void(QByteArray, BaiDuFinishedCallBackPointer) > fun,
     BaiDuFinishedCallBackPointer fp
     ) {
-
+     
     if (bool(fun)==false) {
         if (fp) { fp->finished(false, "call back is null "+QString(__func__)); }
         return;
     }
+
     {
         QCA::ConvertResult pubkey_isok_;
         QCA::PublicKey pubkey_=
@@ -524,7 +611,9 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
 
 }
 
+//unused
 void BaiDuUser::BaiDuUserPrivate::setChildrenPointer(QObject * o) {
+    auto __lock = thisPointer.lock();//增加引用计数,免得运行中被删除
     if ( o ) {
         connect(this,&QObject::destroyed,
             o, [o](QObject *) { o->blockSignals(true); o->deleteLater(); }
@@ -549,4 +638,5 @@ void  BaiDuUser::BaiDuUserPrivate::postLogin(
 
 
 }
+
 
