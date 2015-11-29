@@ -1,0 +1,16 @@
+.vs/BaiDu/v14/.suo
+*.user
+*.opendb
+*.tlog
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.log
+*.vcxproj
+*.exp
+*.filters
+*.sln
+*.db
+*.dll
+*.lib
