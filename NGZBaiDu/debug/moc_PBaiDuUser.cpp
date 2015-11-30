@@ -61,7 +61,7 @@ void BaiDuUserLoginNetworkAccessManager::qt_static_metacall(QObject *_o, QMetaOb
 }
 
 const QMetaObject BaiDuUserLoginNetworkAccessManager::staticMetaObject = {
-    { &QNetworkAccessManager::staticMetaObject, qt_meta_stringdata_BaiDuUserLoginNetworkAccessManager.data,
+    { &BaiDuNetworkAccessManager::staticMetaObject, qt_meta_stringdata_BaiDuUserLoginNetworkAccessManager.data,
       qt_meta_data_BaiDuUserLoginNetworkAccessManager,  qt_static_metacall, Q_NULLPTR, Q_NULLPTR}
 };
 
@@ -76,12 +76,12 @@ void *BaiDuUserLoginNetworkAccessManager::qt_metacast(const char *_clname)
     if (!_clname) return Q_NULLPTR;
     if (!strcmp(_clname, qt_meta_stringdata_BaiDuUserLoginNetworkAccessManager.stringdata0))
         return static_cast<void*>(const_cast< BaiDuUserLoginNetworkAccessManager*>(this));
-    return QNetworkAccessManager::qt_metacast(_clname);
+    return BaiDuNetworkAccessManager::qt_metacast(_clname);
 }
 
 int BaiDuUserLoginNetworkAccessManager::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = QNetworkAccessManager::qt_metacall(_c, _id, _a);
+    _id = BaiDuNetworkAccessManager::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     return _id;

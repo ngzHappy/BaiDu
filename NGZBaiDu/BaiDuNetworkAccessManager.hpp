@@ -1,8 +1,10 @@
 ﻿#if !defined( BAIDUNETWORKACCESSMANAGER_HPP )
 #define BAIDUNETWORKACCESSMANAGER_HPP
 
+#include <mutex>
 #include <QNetworkAccessManager>
 #include "ngzbaidu_global.hpp"
+#include <Set.hpp>
 
 class NGZBAIDUSHARED_EXPORT BaiDuNetworkAccessManager :
         public QNetworkAccessManager{

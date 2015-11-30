@@ -6,6 +6,7 @@
 #include <QUrl>
 #include <QNetworkCookieJar>
 #include <QScriptEngine>
+#include "BaiDuNetworkAccessManager.hpp"
 
 namespace {
 
@@ -94,6 +95,8 @@ void BaiDuTieBa::imgtbs(
         u_->isLogin(),"user is not login"
         );
 
+    auto manager_ = u_->getManager();
+    cct::check_args<ArgError>( manager_,"network manager is null" );
     QNetworkRequest req(QUrl("http://tieba.baidu.com/dc/common/imgtbs"));
     req.setRawHeader("User-Agent", u_->getUserAgent().first );
     req.setHeader(QNetworkRequest::CookieHeader, u_->getAllCookies() );
