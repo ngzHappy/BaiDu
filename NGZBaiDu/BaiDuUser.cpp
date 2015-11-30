@@ -53,11 +53,29 @@ BaiDuUserLoginPack::BaiDuUserLoginPack(QObject * o)
     :QObject(o) {
 }
 
+void BaiDuUserLoginPack::finished(bool v,QString r) {
+    if (isValueSet) { return; }
+    isValueSet=true;
+    {
+        auto super__ = baiduUserPrivate.lock();
+        if (super__) {super__->isLogIn=v; }
+    }
+    //TODO : log in finished
+    hasError=!v;
+    emit loginFinished(v,r);
+    //just call once
+
+}
+
 BaiDuUserLoginPack::~BaiDuUserLoginPack() {
 
+    auto super__ = baiduUserPrivate.lock();
+    if (super__) {super__->isLogInIng=false; }
+
     //如果没有call finished 则判定为父系统被删除 任务没有完成就终止了
-    if (isValueSet) {}
+    if (isValueSet) { }
     else {
+        if (super__) {super__->isLogIn = false; }
         emit loginFinished(false,"endl : "+QString(__func__));
     }
 
@@ -79,16 +97,6 @@ void BaiDuUser::BaiDuUserPrivate::setLogInPackData(BaiDuUserLoginPack * p) {
 
     p->baiduUserPrivate=thisPointer;
     p->userName=p->userNameBase.toUtf8().toPercentEncoding();
-}
-
-void BaiDuUserLoginPack::finished(bool v,QString r) {
-    if (isValueSet) { return; }
-    isValueSet=true;
-    //TODO : log in finished
-    hasError=!v;
-    emit loginFinished(v,r);
-    //just call once
-
 }
 
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p) {
