@@ -16,11 +16,6 @@
 #include <SharedFromSuper.hpp>
 #include "../BaiDuUser.hpp"
 
-namespace cct{
-template<typename T>
-using Func =std::function<T>;
-}
-
 
 class BaiDuUserLoginNetworkAccessManager :
         public QNetworkAccessManager{
@@ -132,16 +127,16 @@ public:
     void upDateGID(  BaiDuFinishedCallBackPointer );
 
     // ask  http://www.baidu.com  then set cookie
-    void getBaiduCookie( cct::Func<void(cct::Map< QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
+    void getBaiduCookie( std::function<void(cct::Map< QByteArray, QNetworkCookie>, BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
 
     //token
     void getBaiduToken( 
-        cct::Func< void(QByteArray,BaiDuFinishedCallBackPointer) >,
+        std::function< void(QByteArray,BaiDuFinishedCallBackPointer) >,
         BaiDuFinishedCallBackPointer );
 
     //rsa key
     void getRSAKey(
-        cct::Func< void(QByteArray/*rsa key*/,QByteArray/*pub key*/,BaiDuFinishedCallBackPointer) >,
+        std::function< void(QByteArray/*rsa key*/,QByteArray/*pub key*/,BaiDuFinishedCallBackPointer) >,
         BaiDuFinishedCallBackPointer
         );
 
@@ -149,7 +144,7 @@ public:
     static void encryptRSA(
         QByteArray public_key,
         QByteArray pass_Word,
-        cct::Func< void(QByteArray ,BaiDuFinishedCallBackPointer) >,
+        std::function< void(QByteArray ,BaiDuFinishedCallBackPointer) >,
         BaiDuFinishedCallBackPointer
         );
 
@@ -159,14 +154,14 @@ public:
         QByteArray rsa_key_,
         QByteArray enc_password_,
         QByteArray token_,
-        cct::Func< void( std::shared_ptr< std::weak_ptr<QNetworkReply> >  ,BaiDuFinishedCallBackPointer) >,
+        std::function< void( std::shared_ptr< std::weak_ptr<QNetworkReply> >  ,BaiDuFinishedCallBackPointer) >,
         BaiDuFinishedCallBackPointer
         );
 
     //
     void onLoginFinished(
         std::shared_ptr< std::weak_ptr<QNetworkReply> >  ,
-        cct::Func< void(BaiDuVertifyCode,BaiDuFinishedCallBackPointer) > ,/*验证码回调*/
+        std::function< void(BaiDuVertifyCode,BaiDuFinishedCallBackPointer) > ,/*验证码回调*/
         BaiDuFinishedCallBackPointer                                      /*结果回调,true false*/
         );
 
