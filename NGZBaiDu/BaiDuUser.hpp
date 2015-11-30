@@ -4,23 +4,8 @@
 #include <functional>
 #include <UniqueSharedPointer.hpp>
 #include "ngzbaidu_global.hpp"
-
-class NGZBAIDUSHARED_EXPORT BaiDuVertifyCode{
-public:
-    QByteArray id ;/* 百度要求的验证码 */
-    QByteArray url;/* 验证码对应的url */
-    QByteArray ans;/* 用户识别的验证码 */
-};
-
-class NGZBAIDUSHARED_EXPORT BaiDuFinishedCallBack{
-public:
-    BaiDuFinishedCallBack(){}
-    virtual ~BaiDuFinishedCallBack(){}
-
-    bool hasError = false;
-    virtual void finished(bool v, QString) { hasError=!v; }
-
-};
+#include "BaiDuVertifyCode.hpp"
+#include "BaiDuFinishedCallBack.hpp"
 
 typedef std::shared_ptr<BaiDuVertifyCode> BaiDuVertifyCodePointer;
 typedef std::shared_ptr<BaiDuFinishedCallBack> BaiDuFinishedCallBackPointer;
@@ -40,6 +25,8 @@ public:
 
     void setUserAgent(const QByteArray & , bool isPhone = false );
     const std::pair<QByteArray,bool> getUserAgent()const;
+
+    bool isLogin() const;
 
 signals:
 

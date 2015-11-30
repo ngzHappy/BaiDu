@@ -99,6 +99,8 @@ void BaiDuUser::BaiDuUserPrivate::setLogInPackData(BaiDuUserLoginPack * p) {
     
 }
 
+bool BaiDuUser::isLogin() const { if (thisp) { return thisp->isLogIn; }return false; }
+
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p) {
 
     connect(p,&BaiDuUserLoginPack::loginFinished,this,&BaiDuUser::BaiDuUserPrivate::loginFinished);

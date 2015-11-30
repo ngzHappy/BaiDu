@@ -1,4 +1,4 @@
-﻿#ifndef NGZBAIDU_GLOBAL_HPP
+﻿#if !defined(NGZBAIDU_GLOBAL_HPP )
 #define NGZBAIDU_GLOBAL_HPP
 
 #include <QObject>
