@@ -96,7 +96,7 @@ BaiDuUser::BaiDuUserPrivate::~BaiDuUserPrivate() {
 void BaiDuUser::BaiDuUserPrivate::setLogInPackData(BaiDuUserLoginPack * p) {
 
     p->baiduUserPrivate=thisPointer;
-    p->userName=p->userNameBase.toUtf8().toPercentEncoding();
+    
 }
 
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p) {
@@ -138,7 +138,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
     }
 
     //进一步设置数据
-    loginPack->vertifyCode=vertifyCode_;
+    this->vertifyCode=vertifyCode_;
     setLogInPackData(loginPack);
 
     //更新gid

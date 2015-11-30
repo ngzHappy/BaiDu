@@ -59,11 +59,8 @@ public:
     
     bool isValueSet=false;
     cct::SharedFromSuper< BaiDuUser::BaiDuUserPrivate > baiduUserPrivate  ;
-    BaiDuVertifyCode vertifyCode;/*验证码*/
     QString userNameBase;/*用户名原始字符串*/
     QString passWordBase;/*密码原始字符串*/
-    QByteArray userName;/*用户名*/
-    QByteArray passWord;/*密码*/
     QByteArray publicKey;
     
 public:
