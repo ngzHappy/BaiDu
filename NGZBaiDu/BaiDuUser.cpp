@@ -520,12 +520,8 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     QByteArray/*pub key*/,
     BaiDuFinishedCallBackPointer) > fun,
     BaiDuFinishedCallBackPointer fp
-    ) {
-
-    if (bool(fun)==false) {
-        if (fp) { fp->finished(false,"call back is null "+QString(__func__)); }
-        return;
-    }
+    ) try {
+    cct::check_args<ArgError>( fun,"call back is null "+QString(__func__) );
 
     //获得当前时间
     QByteArray ctt;
@@ -614,6 +610,12 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
 
     });
 
+}
+catch ( const ArgError & e_ ) {
+    if (fp) { fp->finished(false,e_.what() ); }
+}
+catch (...) {
+    throw;
 }
 
 //static function
