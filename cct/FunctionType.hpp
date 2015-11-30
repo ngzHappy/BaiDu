@@ -65,6 +65,22 @@ public:
 
 template<
     typename ReturnType,
+    typename ClassType
+>
+class FunctionType< ReturnType(ClassType::*)() const > {
+public:
+    typedef ReturnType return_type;
+    typedef void _0;
+    typedef void _r0;
+    typedef ReturnType(ClassType::* function_type)() const;
+    typedef std::function<ReturnType(const ClassType *)> stl_function_type;
+    typedef ReturnType(std_function_type)(const ClassType *);
+    typedef ClassType class_type;
+    enum { arg_size=1 };
+};
+
+template<
+    typename ReturnType,
     typename Arg0
 >
 class FunctionType< ReturnType(
@@ -23001,6 +23017,16 @@ public:
         Arg35);
     typedef ClassType class_type;
     enum { arg_size=36 };
+};
+
+}
+
+namespace cct {
+
+template<typename T>
+class func
+:public FunctionType<T>::stl_function_type,
+ public FunctionType<T>{
 };
 
 }

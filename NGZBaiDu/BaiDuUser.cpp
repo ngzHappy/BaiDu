@@ -54,7 +54,7 @@ BaiDuUserLoginPack::BaiDuUserLoginPack(QObject * o)
 }
 
 BaiDuUserLoginPack::~BaiDuUserLoginPack() {
-    
+
     //如果没有call finished 则判定为父系统被删除 任务没有完成就终止了
     if (isValueSet) {   }
     else {
@@ -87,7 +87,7 @@ void BaiDuUserLoginPack::finished(bool v,QString r) {
     hasError=!v;
     emit loginFinished(v,r);
     //just call once
-    
+
 }
 
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p) {
@@ -145,9 +145,9 @@ void BaiDuUser::BaiDuUserPrivate::login(
         BCP_ errorFunction) mutable {
         auto thisPointer=thisp.lock();
         if (bool(thisPointer)==false) { if (errorFunction) { errorFunction->finished(false,"endl"); }return; }
-           
+
         thisPointer->cookies=cookies;
-                
+
         //获得baidu token
         thisPointer->getBaiduToken([thisp ,pack](
             QByteArray token_,
@@ -201,7 +201,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
                             [thisp,pack,reply_,errorFunction]() {
                             auto thisPointer=thisp.lock();
                             if (bool(thisPointer)==false) { if (errorFunction) { errorFunction->finished(false,"endl"); }return; }
-                            
+
                             thisPointer->onLoginFinished( reply_ ,[thisp,pack](
                                 BaiDuVertifyCode vc_,
                                 BaiDuFinishedCallBackPointer errorFunction
@@ -254,7 +254,7 @@ void BaiDuUser::setUserAgent(_zfunt::_0 v ,_zfunt::_1 is_) {
 #undef _zfunt
 
 #define _zfunt cct::FunctionType< decltype( &BaiDuUser::getUserAgent ) >
-std::pair<QByteArray,bool> BaiDuUser::getUserAgent()const {
+_zfunt::return_type BaiDuUser::getUserAgent()const {
     if (thisp) { return{ thisp->userAgent ,thisp->isPhone}; }
     const static std::pair<QByteArray,bool> ans;return ans;
 }
@@ -302,9 +302,10 @@ void BaiDuUser::gid(
 }
 #undef _zfunt
 
+#define _zfunt cct::FunctionType< decltype(&BaiDuUser::currentTimer) >
 void BaiDuUser::currentTimer(
-        std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>  fun,
-        BaiDuFinishedCallBackPointer fp) try{
+    _zfunt::_0 fun,
+    _zfunt::_1 fp) try{
     cct::check_args<ArgError>( fun, "call back is null "+QString(__func__) );
     fun(QByteArray::number(QDateTime::currentMSecsSinceEpoch()),fp);
 }
@@ -314,6 +315,7 @@ catch (const  ArgError & e) {
 catch (...) {
     throw;
 }
+#undef _zfunt
 
 BaiDuUser::~BaiDuUser() {
 
@@ -325,9 +327,10 @@ BaiDuUser::~BaiDuUser() {
 
 }
 
+#define _zfunt cct::FunctionType< decltype(&BaiDuUser::BaiDuUserPrivate::getBaiduCookie) >
 void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
-        std::function< void(cct::Map<QByteArray,QNetworkCookie>,BaiDuFinishedCallBackPointer) > fun,
-        BaiDuFinishedCallBackPointer fp) {
+    _zfunt::_0 fun,
+    _zfunt::_1 fp) {
 
     if (bool(fun)==false) {
         if (fp) { fp->finished(false,"call back is null "+QString(__func__)); }
@@ -389,6 +392,7 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduCookie(
     });
 
 }
+#undef _zfunt
 
 namespace {
 
@@ -452,7 +456,7 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
     req.setRawHeader("User-Agent",this->userAgent);
     req.setHeader(QNetworkRequest::CookieHeader,getAllCookies());
 
-    // 
+    //
     auto replyNext_=std::shared_ptr<QNetworkReply>(manager->get(req),
         [](QNetworkReply * d) { d->deleteLater(); }
     );
@@ -507,7 +511,7 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
     );
 }
 
-//获得rsa key 
+//获得rsa key
 void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     cct::Func< void(QByteArray/*rsa key*/,
     QByteArray/*pub key*/,
@@ -551,7 +555,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     );
     manager->addReply(replyNext__);//++
     std::weak_ptr<QNetworkReply> replyNext_(replyNext__);
-    // 
+    //
     auto thisPointer_=thisPointer;
 
     connect(replyNext__.get(),&QNetworkReply::finished,
@@ -667,7 +671,7 @@ void BaiDuUser::BaiDuUserPrivate::setChildrenPointer(QObject * o) {
 
 }
 
-//void 
+//void
 void  BaiDuUser::BaiDuUserPrivate::postLogin(
     QByteArray user_name_,
     QByteArray rsa_key_,
@@ -869,7 +873,7 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
     auto rp_=rp->lock();
     cct::check_args<ArgError>(rp_," reply null . ");
     cct::check_args<ArgError>(fun,"call back is null "+QString(__func__));
-    
+
     auto * reply_=rp_.get();
 
     {
@@ -877,7 +881,7 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
         rData=gzip::QCompressor::gzipDecompress(rData);
 
         cct::check_args<ArgError>(rData.isEmpty()==false,"BaiDuLogIn_Step4 : empty reply ! ");
-        
+
         auto ansMap=BaiDuLogIn_Step4::getAnsMap(rData,fp);
         if (fp) { if (fp->hasError) { return; } }
 
@@ -925,7 +929,7 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
                 }
             }
         }
-        
+
         /*set more cookie*/
         {
             auto  _manager=manager;
