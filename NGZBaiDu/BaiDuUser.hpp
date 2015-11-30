@@ -36,6 +36,10 @@ public:
 
     static void gid( std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
     static void currentTimer( std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer);
+public:
+
+    void setUserAgent(const QByteArray &);
+    const QByteArray & getUserAgent()const;
 
 signals:
 
@@ -49,6 +53,7 @@ signals:
             );
 
     void loginFinished( bool,QString );
+
 public:
     class BaiDuUserPrivate;
     friend class BaiDuUserPrivate;

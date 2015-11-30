@@ -14,6 +14,10 @@
 #include <sstream>
 #include <FunctionType.hpp>
 
+namespace cct{
+template<typename T>
+using Func=std::function<T>;
+}
 
 namespace {
 
@@ -242,72 +246,53 @@ BaiDuUser::BaiDuUser(QObject * o):QObject(o) {
     connect(thisp.get(),&BaiDuUser::BaiDuUserPrivate::loginFinished,this,&BaiDuUser::loginFinished);
 }
 
+void BaiDuUser::setUserAgent(const QByteArray & v) {
+    if (thisp) { thisp->userAgent=v; }
+}
+const QByteArray & BaiDuUser::getUserAgent()const {
+    if (thisp) { return thisp->userAgent; }
+    const static QByteArray ans;return ans;
+}
+
 #define _zfunt cct::func< decltype( &BaiDuUser::gid ) >
 void BaiDuUser::gid(
     _zfunt::_0 fun,
-        BaiDuFinishedCallBackPointer fp) {
-    if (bool(fun)==false) {
-        if (fp) { fp->finished(false,"call back is null "+QString(__func__)); }
-        return;
-    }
+    _zfunt::_1 fp) try{
 
+    cct::check_args<ArgError>(fun,"call back is null "+QString(__func__));
     QByteArray ans{ 35,Qt::Uninitialized };
 
     constexpr const static char toHex0[]={
-        '0','1','2','3','4','5','6','7',
-        '8','9','A','B','C','D','E','F',
+        '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
     };
 
     constexpr const static char toHex1[]={
-        '8','9','A','B','C','D','E','F',
-        '8','9','A','B','C','D','E','F',
+        '8','9','A','B','C','D','E','F','8','9','A','B','C','D','E','F',
     };
 
     class Array {
         char data[35];
     public:
         Array():data{
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            '-',
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            '-',
-            '4',
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            '-',
-            toHex1[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            '-',
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15],
-            toHex0[std::rand()&15]
-        } {
-        }
+            toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
+            toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
+            toHex0[std::rand()&15], '-',toHex0[std::rand()&15],
+            toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
+            '-','4',toHex0[std::rand()&15],
+            toHex0[std::rand()&15],toHex0[std::rand()&15], '-',
+            toHex1[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
+            toHex0[std::rand()&15],'-',toHex0[std::rand()&15],
+            toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
+            toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
+            toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
+            toHex0[std::rand()&15],toHex0[std::rand()&15]
+        } {}
     };
 
     new(ans.data()) Array;
     fun(std::move(ans),fp);
+}catch( const ArgError & e ){
+    if (fp) { fp->finished(false,e.what() ); }
 }
 #undef _zfunt
 
@@ -867,7 +852,6 @@ public:
 };
 
 }
-
 
 void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
     std::shared_ptr< std::weak_ptr<QNetworkReply> > rp,
