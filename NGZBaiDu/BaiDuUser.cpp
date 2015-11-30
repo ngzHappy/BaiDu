@@ -14,7 +14,7 @@
 #include <sstream>
 #include <FunctionType.hpp>
 
-namespace cct{
+namespace cct {
 template<typename T>
 using Func=std::function<T>;
 }
@@ -32,8 +32,8 @@ class ArgError {
     QString what_;
 public:
     ArgError() {}
-    ArgError( decltype(nullptr) ) {}
-    ArgError(const char * d):what_( QString::fromUtf8(d) ) {}
+    ArgError(decltype(nullptr)) {}
+    ArgError(const char * d):what_(QString::fromUtf8(d)) {}
     ArgError(const QString & v):what_(v) {}
     const QString & what()const { return what_; }
 };
@@ -56,10 +56,11 @@ BaiDuUserLoginPack::BaiDuUserLoginPack(QObject * o)
 BaiDuUserLoginPack::~BaiDuUserLoginPack() {
 
     //如果没有call finished 则判定为父系统被删除 任务没有完成就终止了
-    if (isValueSet) {   }
+    if (isValueSet) {}
     else {
         emit loginFinished(false,"endl : "+QString(__func__));
     }
+
 }
 
 BaiDuUser::BaiDuUserPrivate::~BaiDuUserPrivate() {
@@ -91,7 +92,7 @@ void BaiDuUserLoginPack::finished(bool v,QString r) {
 }
 
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p) {
-    
+
     connect(p,&BaiDuUserLoginPack::loginFinished,this,&BaiDuUser::BaiDuUserPrivate::loginFinished);
 }
 
@@ -107,8 +108,8 @@ void BaiDuUser::BaiDuUserPrivate::login(
     BaiDuVertifyCode vertifyCode_
     ) {
 
-    auto * loginPack=new BaiDuUserLoginPack( nullptr );
-    BaiDuUserLoginPackPointer pack( loginPack );
+    auto * loginPack=new BaiDuUserLoginPack(nullptr);
+    BaiDuUserLoginPackPointer pack(loginPack);
 
     //设置基本数据
     loginPack->userNameBase=userName;
@@ -137,7 +138,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
     if (pack->hasError) { return; }
 
     typedef BaiDuFinishedCallBackPointer BCP_;
-    auto thisp = thisPointer;
+    auto thisp=thisPointer;
     //TODO : login
 //获得baidu cookie
     getBaiduCookie([thisp,pack](
@@ -149,7 +150,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
         thisPointer->cookies=cookies;
 
         //获得baidu token
-        thisPointer->getBaiduToken([thisp ,pack](
+        thisPointer->getBaiduToken([thisp,pack](
             QByteArray token_,
             BCP_ errorFunction) mutable {
             auto thisPointer=thisp.lock();
@@ -191,9 +192,9 @@ void BaiDuUser::BaiDuUserPrivate::login(
                         BaiDuFinishedCallBackPointer errorFunction
                         ) {
                         auto thisPointer=thisp.lock();
-                        if (bool(reply_)==false) {if (errorFunction) { errorFunction->finished(false,"reply error!"); }return;}
-                        auto reply = reply_->lock();
-                        if (bool(reply)==false) {if (errorFunction) { errorFunction->finished(false,"reply error!"); }return;}
+                        if (bool(reply_)==false) { if (errorFunction) { errorFunction->finished(false,"reply error!"); }return; }
+                        auto reply=reply_->lock();
+                        if (bool(reply)==false) { if (errorFunction) { errorFunction->finished(false,"reply error!"); }return; }
                         if (bool(thisPointer)==false) { if (errorFunction) { errorFunction->finished(false,"endl"); }return; }
 
                         reply->connect(reply.get(),&QNetworkReply::finished,
@@ -202,7 +203,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
                             auto thisPointer=thisp.lock();
                             if (bool(thisPointer)==false) { if (errorFunction) { errorFunction->finished(false,"endl"); }return; }
 
-                            thisPointer->onLoginFinished( reply_ ,[thisp,pack](
+                            thisPointer->onLoginFinished(reply_,[thisp,pack](
                                 BaiDuVertifyCode vc_,
                                 BaiDuFinishedCallBackPointer errorFunction
                                 ) {
@@ -211,7 +212,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
                                 if (bool(thisPointer)==false) { if (errorFunction) { errorFunction->finished(false,"endl"); }return; }
 
                                 //emit 验证码
-                                thisPointer->setVertifyCode( vc_.url,vc_.id );
+                                thisPointer->setVertifyCode(vc_.url,vc_.id);
 
                             },
                                 errorFunction);
@@ -249,22 +250,22 @@ BaiDuUser::BaiDuUser(QObject * o):QObject(o) {
 }
 
 #define _zfunt cct::func< decltype( &BaiDuUser::BaiDuUser::setUserAgent ) >
-void BaiDuUser::setUserAgent(_zfunt::_0 v ,_zfunt::_1 is_) {
+void BaiDuUser::setUserAgent(_zfunt::_0 v,_zfunt::_1 is_) {
     if (thisp) { thisp->userAgent=v; thisp->isPhone=is_; }
 }
 #undef _zfunt
 
 #define _zfunt cct::FunctionType< decltype( &BaiDuUser::getUserAgent ) >
 _zfunt::return_type BaiDuUser::getUserAgent()const {
-    if (thisp) { return{ thisp->userAgent ,thisp->isPhone}; }
-    const static std::pair<QByteArray,bool> ans;return ans;
+    if (thisp) { return{ thisp->userAgent ,thisp->isPhone }; }
+    const static std::pair<QByteArray,bool> ans; return ans;
 }
 #undef _zfunt
 
 #define _zfunt cct::func< decltype( &BaiDuUser::gid ) >
 void BaiDuUser::gid(
     _zfunt::_0 fun,
-    _zfunt::_1 fp) try{
+    _zfunt::_1 fp) try {
 
     cct::check_args<ArgError>(fun,"call back is null "+QString(__func__));
     QByteArray ans{ 35,Qt::Uninitialized };
@@ -293,25 +294,27 @@ void BaiDuUser::gid(
             toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
             toHex0[std::rand()&15],toHex0[std::rand()&15],toHex0[std::rand()&15],
             toHex0[std::rand()&15],toHex0[std::rand()&15]
-        } {}
+        } {
+        }
     };
 
     new(ans.data()) Array;
     fun(std::move(ans),fp);
-}catch( const ArgError & e ){
-    if (fp) { fp->finished(false,e.what() ); }
+}
+catch (const ArgError & e) {
+    if (fp) { fp->finished(false,e.what()); }
 }
 #undef _zfunt
 
 #define _zfunt cct::FunctionType< decltype(&BaiDuUser::currentTimer) >
 void BaiDuUser::currentTimer(
     _zfunt::_0 fun,
-    _zfunt::_1 fp) try{
-    cct::check_args<ArgError>( fun, "call back is null "+QString(__func__) );
+    _zfunt::_1 fp) try {
+    cct::check_args<ArgError>(fun,"call back is null "+QString(__func__));
     fun(QByteArray::number(QDateTime::currentMSecsSinceEpoch()),fp);
 }
 catch (const  ArgError & e) {
-    if (fp) { fp->finished(false, e.what() ); }
+    if (fp) { fp->finished(false,e.what()); }
 }
 catch (...) {
     throw;
@@ -521,7 +524,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     BaiDuFinishedCallBackPointer) > fun,
     BaiDuFinishedCallBackPointer fp
     ) try {
-    cct::check_args<ArgError>( fun,"call back is null "+QString(__func__) );
+    cct::check_args<ArgError>(fun,"call back is null "+QString(__func__));
 
     //获得当前时间
     QByteArray ctt;
@@ -559,60 +562,49 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
 
     connect(replyNext__.get(),&QNetworkReply::finished,
         this,[replyNext_,thisPointer_,fp,fun]() mutable {
+        try {
+            auto replyNext=replyNext_.lock();
+            auto thisPointer=thisPointer_.lock();
 
-        auto replyNext=replyNext_.lock();
-        auto thisPointer=thisPointer_.lock();
+            cct::check_args<ArgError>(thisPointer,"null""endl",replyNext,"null""endl");
 
-        if (bool(replyNext)==false) {
-            if (fp) { fp->finished(false,"null""endl"); }
-            return;
-        }
+            //delete
+            thisPointer->manager->removeReply(replyNext);//--
 
-        if (bool(thisPointer)==false) {
-            if (fp) { fp->finished(false,"null""endl"); }
-            return;
-        }
+            auto * reply_=replyNext.get();
 
-        //delete
-        thisPointer->manager->removeReply(replyNext);//--
+            //
+            {
+                QString publickey_;
+                auto json=reply_->readAll();
+                json=gzip::QCompressor::gzipDecompress(json);
 
-        auto * reply_=replyNext.get();
+                cct::check_args<ArgError>(json.isEmpty()==false,"BaiDuLogIn_Step3 : empty reply ! ");
 
-        //
-        {
-            QString publickey_;
-            auto json=reply_->readAll();
-            json=gzip::QCompressor::gzipDecompress(json);
+                json=json.mid(json.indexOf("(")+1);
+                json.resize(json.size()-1);
 
-            if (json.isEmpty()) {
-                if (fp) { fp->finished(false,"BaiDuLogIn_Step3 : empty reply ! "); }
-                return;
+                QScriptEngine eng;
+
+                eng.evaluate("var bd__cbs__dmwxux = "+json);
+                const auto error=eng.evaluate(u8R"(bd__cbs__dmwxux["errno"])").toString();
+                publickey_=eng.evaluate(u8R"(bd__cbs__dmwxux["pubkey"])").toString();
+                const auto key=eng.evaluate(u8R"(bd__cbs__dmwxux["key"])").toString();
+
+                cct::check_args<ArgError>((error!="0"),"BaiDuLogIn_Step3 : jsom reply error ! ");
+
+                auto rsa_key=key.toUtf8();
+                fun(rsa_key,publickey_.toUtf8(),fp);
             }
-
-            json=json.mid(json.indexOf("(")+1);
-            json.resize(json.size()-1);
-
-            QScriptEngine eng;
-
-            eng.evaluate("var bd__cbs__dmwxux = "+json);
-            const auto error=eng.evaluate(u8R"(bd__cbs__dmwxux["errno"])").toString();
-            publickey_=eng.evaluate(u8R"(bd__cbs__dmwxux["pubkey"])").toString();
-            const auto key=eng.evaluate(u8R"(bd__cbs__dmwxux["key"])").toString();
-
-            if (error!="0") {
-                if (fp) { fp->finished(false,"BaiDuLogIn_Step3 : jsom reply error ! "); }
-                return;
-            }
-
-            auto rsa_key=key.toUtf8();
-            fun(rsa_key,publickey_.toUtf8(),fp);
         }
-
+        catch (const ArgError & e_) {
+            if (fp) { fp->finished(false,e_.what()); }
+        }
     });
 
 }
-catch ( const ArgError & e_ ) {
-    if (fp) { fp->finished(false,e_.what() ); }
+catch (const ArgError & e_) {
+    if (fp) { fp->finished(false,e_.what()); }
 }
 catch (...) {
     throw;
@@ -872,7 +864,7 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
     std::shared_ptr< std::weak_ptr<QNetworkReply> > rp,
     cct::Func< void(BaiDuVertifyCode,BaiDuFinishedCallBackPointer) > fun,/*验证码回调*/
     BaiDuFinishedCallBackPointer fp /*结果回调,true false*/
-    ) try{
+    ) try {
 
     cct::check_args<ArgError>(rp," reply null  ");
     auto rp_=rp->lock();
@@ -907,11 +899,11 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
                 //https://passport.baidu.com/cgi-bin/genimage?
                 const auto & gv_=ansMap["codeString"];
                 if (gv_.empty()==false) { /*如果有验证码*/
-                    //验证码
-                    if (fp) { fp->finished(false,u8"验证码"_qutf8); }
+                    /*先输出错误信息*/
+                    if (fp) { fp->finished(false,error_); }
                     BaiDuVertifyCode vc_;
-                    /*验证码网址*/vc_.url = QByteArray("https://passport.baidu.com/cgi-bin/genimage?")+gv_.c_str();
-                    /*验证码id  */vc_.id  = QByteArray(gv_.c_str());
+                    /*验证码网址*/vc_.url=QByteArray("https://passport.baidu.com/cgi-bin/genimage?")+gv_.c_str();
+                    /*验证码id  */vc_.id=QByteArray(gv_.c_str());
                     if (fun) { fun(vc_,fp); }
                     return;
                 }
@@ -943,7 +935,7 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
             _req.setRawHeader("Accept-Encoding","gzip, deflate");
             _req.setRawHeader("User-Agent",userAgent);
 
-            auto __r = std::shared_ptr< QNetworkReply>(_manager->get(_req),
+            auto __r=std::shared_ptr< QNetworkReply>(_manager->get(_req),
                 [](QNetworkReply * d) {d->deleteLater(); }
             );
 
