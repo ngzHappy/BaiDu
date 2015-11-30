@@ -591,7 +591,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
                 publickey_=eng.evaluate(u8R"(bd__cbs__dmwxux["pubkey"])").toString();
                 const auto key=eng.evaluate(u8R"(bd__cbs__dmwxux["key"])").toString();
 
-                cct::check_args<ArgError>((error!="0"),"BaiDuLogIn_Step3 : jsom reply error ! ");
+                cct::check_args<ArgError>( error=="0" ,"BaiDuLogIn_Step3 : json reply error ! ");
 
                 auto rsa_key=key.toUtf8();
                 fun(rsa_key,publickey_.toUtf8(),fp);
