@@ -6,6 +6,7 @@
 #include "BaiDuFinishedCallBack.hpp"
 #include <QObject>
 #include <UniqueSharedPointer.hpp>
+#include <functional>
 
 class BaiDuUser;
 
@@ -23,6 +24,8 @@ public:
     std::shared_ptr<BaiDuUser> getBaiDuUser()const;
     void setBaiDuUser( std::shared_ptr<BaiDuUser> );
 
+    static void mouse_pwd(QByteArray now_ ,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer  ) ;
+    static void imgtbs(std::shared_ptr< BaiDuUser >,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );
 signals:
 
 public slots:

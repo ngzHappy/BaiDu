@@ -40,7 +40,7 @@ public:
 }
 
 BaiDuUserLoginNetworkAccessManager::BaiDuUserLoginNetworkAccessManager(QObject * o)
-    :QNetworkAccessManager(o) {}
+    :BaiDuNetworkAccessManager(o) {}
 
 BaiDuUser::BaiDuUserPrivate::BaiDuUserPrivate(std::shared_ptr<BaiDuUserPrivate> o):
     thisPointer(o) {
@@ -994,6 +994,18 @@ catch (const ArgError & e) {
 }
 catch (...) {
     throw;
+}
+
+std::shared_ptr< std::map< QByteArray, QNetworkCookie> > BaiDuUser::getCookies() const {
+    return thisp->cookies ;
+}
+
+QVariant BaiDuUser::getAllCookies() const {
+    return thisp->getAllCookies();
+}
+
+std::shared_ptr<BaiDuNetworkAccessManager> BaiDuUser::getManager() const {
+    return thisp->manager;
 }
 
 /*

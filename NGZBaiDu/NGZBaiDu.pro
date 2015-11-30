@@ -20,7 +20,8 @@ SOURCES += NGZBaiDu.cpp \
 SOURCES += BaiDuUser.cpp
 SOURCES += private/GZipCompressor.cpp
 
-HEADERS += $$PWD/NGZBaiDu.hpp
+HEADERS += $$PWD/NGZBaiDu.hpp \
+    BaiDuNetworkAccessManager.hpp
 HEADERS += $$PWD/BaiDuTieBa.hpp
 HEADERS += $$PWD/private/PBaiduTieBa.hpp
 HEADERS += $$PWD/BaiDuVertifyCode.hpp

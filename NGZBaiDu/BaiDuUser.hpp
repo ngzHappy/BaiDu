@@ -1,11 +1,15 @@
 ﻿#if !defined(BAIDUUSER_ngz_HPP)
 #define BAIDUUSER_ngz_HPP
 
+#include <QNetworkCookie>
+#include <QVariant>
+#include <map>
 #include <functional>
 #include <UniqueSharedPointer.hpp>
 #include "ngzbaidu_global.hpp"
 #include "BaiDuVertifyCode.hpp"
 #include "BaiDuFinishedCallBack.hpp"
+class BaiDuNetworkAccessManager;
 
 class NGZBAIDUSHARED_EXPORT BaiDuUser :
         public  QObject{
@@ -24,7 +28,9 @@ public:
     const std::pair<QByteArray,bool> getUserAgent()const;
 
     bool isLogin() const;
-
+    std::shared_ptr< std::map< QByteArray, QNetworkCookie> > getCookies() const;
+    QVariant getAllCookies() const;
+    std::shared_ptr<BaiDuNetworkAccessManager> getManager() const ;
 signals:
 
     /* 登录 : 注意,没有logout 需要logout只需要delete this即可

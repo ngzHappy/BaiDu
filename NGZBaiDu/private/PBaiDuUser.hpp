@@ -14,41 +14,18 @@
 #include <QVariant>
 #include <QNetworkReply>
 #include <SharedFromSuper.hpp>
+#include "BaiDuNetworkAccessManager.hpp"
 #include "../BaiDuUser.hpp"
 
 
 class NGZBAIDUSHARED_EXPORT BaiDuUserLoginNetworkAccessManager :
-        public QNetworkAccessManager{
+        public BaiDuNetworkAccessManager{
     Q_OBJECT
 private:
-    std::recursive_mutex reply_mutex;
-    cct::Set< std::shared_ptr<QNetworkReply> > replys;
+    
 public:
     BaiDuUserLoginNetworkAccessManager( QObject * ) ;     
-
-    void addReply( std::shared_ptr<QNetworkReply> r ) {
-        {
-            std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
-            if (replys) { replys->insert(r); }
-        }
-
-    }
-
-    template< typename Tp >
-    void removeReply( Tp r ) {
-        {
-            std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
-            if (replys) {  replys->erase( r );  }
-        }
-    }
-
-    ~BaiDuUserLoginNetworkAccessManager() {
-        {
-            std::unique_lock<std::recursive_mutex> __lock;
-            if (replys) { replys.reset();/*/close all replys*/ }
-        }
-
-    }
+    ~BaiDuUserLoginNetworkAccessManager() { }
 };
 
 class NGZBAIDUSHARED_EXPORT BaiDuUserLoginPack :
