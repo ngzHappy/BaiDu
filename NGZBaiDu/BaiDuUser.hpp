@@ -7,9 +7,6 @@
 #include "BaiDuVertifyCode.hpp"
 #include "BaiDuFinishedCallBack.hpp"
 
-typedef std::shared_ptr<BaiDuVertifyCode> BaiDuVertifyCodePointer;
-typedef std::shared_ptr<BaiDuFinishedCallBack> BaiDuFinishedCallBackPointer;
-
 class NGZBAIDUSHARED_EXPORT BaiDuUser :
         public  QObject{
     Q_OBJECT
