@@ -38,8 +38,8 @@ public:
     static void currentTimer( std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer);
 public:
 
-    void setUserAgent(const QByteArray &);
-    const QByteArray & getUserAgent()const;
+    void setUserAgent(const QByteArray & , bool isPhone = false );
+    const std::pair<QByteArray,bool> & getUserAgent()const;
 
 signals:
 

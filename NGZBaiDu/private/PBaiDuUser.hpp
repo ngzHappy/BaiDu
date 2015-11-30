@@ -109,6 +109,7 @@ public:
     QByteArray token;
     QByteArray rsaKey;/*rsa -- key*/
     BaiDuVertifyCode vertifyCode;
+    bool isPhone{false};
     std::atomic< bool > isOnDestory{ false };
 
     bool onDestory() const volatile { return isOnDestory.load(); }

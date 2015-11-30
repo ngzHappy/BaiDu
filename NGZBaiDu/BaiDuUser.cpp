@@ -46,6 +46,7 @@ BaiDuUser::BaiDuUserPrivate::BaiDuUserPrivate(std::shared_ptr<BaiDuUserPrivate> 
     thisPointer(o) {
     this->__all__bits__=char(0);
     manager=std::make_shared<BaiDuUserLoginNetworkAccessManager>(nullptr);
+    userAgent="Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko";
 }
 
 BaiDuUserLoginPack::BaiDuUserLoginPack(QObject * o)
@@ -246,13 +247,18 @@ BaiDuUser::BaiDuUser(QObject * o):QObject(o) {
     connect(thisp.get(),&BaiDuUser::BaiDuUserPrivate::loginFinished,this,&BaiDuUser::loginFinished);
 }
 
-void BaiDuUser::setUserAgent(const QByteArray & v) {
-    if (thisp) { thisp->userAgent=v; }
+#define _zfunt cct::func< decltype( &BaiDuUser::BaiDuUser::setUserAgent ) >
+void BaiDuUser::setUserAgent(_zfunt::_0 v ,_zfunt::_1 is_) {
+    if (thisp) { thisp->userAgent=v; thisp->isPhone=is_; }
 }
-const QByteArray & BaiDuUser::getUserAgent()const {
-    if (thisp) { return thisp->userAgent; }
-    const static QByteArray ans;return ans;
+#undef _zfunt
+
+#define _zfunt cct::FunctionType< decltype( &BaiDuUser::getUserAgent ) >
+std::pair<QByteArray,bool> BaiDuUser::getUserAgent()const {
+    if (thisp) { return{ thisp->userAgent ,thisp->isPhone}; }
+    const static std::pair<QByteArray,bool> ans;return ans;
 }
+#undef _zfunt
 
 #define _zfunt cct::func< decltype( &BaiDuUser::gid ) >
 void BaiDuUser::gid(
@@ -685,7 +691,7 @@ void  BaiDuUser::BaiDuUserPrivate::postLogin(
     const static constexpr char * quick_user="0";
     const static constexpr char * memberPass="on";
     const static constexpr char * loginType="dialogLogin";
-    const static constexpr bool isPhone=false;
+    //const static constexpr bool isPhone=false;
     const static constexpr bool loginmerge=true;
 
     /* 发起登录请求 */
@@ -706,7 +712,7 @@ void  BaiDuUser::BaiDuUserPrivate::postLogin(
             {"subpro",""},
             {"apiver","v3"},
             {"tt",current_time_ },
-            {"codestring", this->vertifyCode.id },/*验证码*/
+            {"codestring", this->vertifyCode.id },/*验证码id*/
             {"safeflg",safeflg},
             {"u", u },
             {"isPhone",isPhone?"true":"false"},
@@ -720,7 +726,7 @@ void  BaiDuUser::BaiDuUserPrivate::postLogin(
             {"splogin",splogin },
             {"username",user_name_ },
             {"password",enc_password_ },
-            {"verifycode",this->vertifyCode.ans },/*验证码id*/
+            {"verifycode",this->vertifyCode.ans },/*验证码*/
             {"mem_pass",memberPass},
             {"rsakey",rsa_key_ },
             {"crypttype","12"},
