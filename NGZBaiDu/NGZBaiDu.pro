@@ -20,11 +20,11 @@ SOURCES += NGZBaiDu.cpp \
 SOURCES += BaiDuUser.cpp
 SOURCES += private/GZipCompressor.cpp
 
-HEADERS += $$PWD/NGZBaiDu.hpp \
-    BaiDuTieBa.hpp \
-    private/PBaiduTieBa.hpp \
-    BaiDuVertifyCode.hpp \
-    BaiDuFinishedCallBack.hpp
+HEADERS += $$PWD/NGZBaiDu.hpp
+HEADERS += $$PWD/BaiDuTieBa.hpp
+HEADERS += $$PWD/private/PBaiduTieBa.hpp
+HEADERS += $$PWD/BaiDuVertifyCode.hpp
+HEADERS += $$PWD/BaiDuFinishedCallBack.hpp
 HEADERS += $$PWD/private/GZipCompressor.hpp
 HEADERS += $$PWD/BaiDuUser.hpp
 HEADERS += $$PWD/private/PBaiDuUser.hpp

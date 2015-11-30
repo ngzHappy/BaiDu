@@ -9,6 +9,6 @@ public:
     QByteArray url;/* 验证码对应的url */
     QByteArray ans;/* 用户识别的验证码 */
 };
-
+typedef std::shared_ptr<BaiDuVertifyCode> BaiDuVertifyCodePointer;
 
 #endif // BAIDUVERTIFYCODE_HPP

@@ -11,5 +11,6 @@ public:
     virtual void finished(bool v, QString) { hasError=!v; }
 
 };
+typedef std::shared_ptr<BaiDuFinishedCallBack> BaiDuFinishedCallBackPointer;
 
 #endif // BAIDUFINISHEDCALLBACK_HPP

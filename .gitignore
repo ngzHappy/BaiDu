@@ -36,3 +36,6 @@ NGZBaiDuTest/release/moc_PBaiDuUser.cpp
 NGZBaiDuTest/release/qrc_LoginInDialog.cpp
 NGZBaiDuTest/release/moc_MainWindow.cpp
 NGZBaiDuTest/release/moc_LogInDialog.cpp
+NGZBaiDu/debug/moc_BaiDuTieBa.cpp
+NGZBaiDu/debug/moc_PBaiduTieBa.cpp
+*.autosave
