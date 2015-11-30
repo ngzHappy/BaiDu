@@ -17,7 +17,7 @@
 #include "../BaiDuUser.hpp"
 
 
-class BaiDuUserLoginNetworkAccessManager :
+class NGZBAIDUSHARED_EXPORT BaiDuUserLoginNetworkAccessManager :
         public QNetworkAccessManager{
     Q_OBJECT
 private:
@@ -29,9 +29,7 @@ public:
     void addReply( std::shared_ptr<QNetworkReply> r ) {
         {
             std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
-            if (replys) {
-                replys->insert(r);
-            }
+            if (replys) { replys->insert(r); }
         }
 
     }
@@ -40,18 +38,14 @@ public:
     void removeReply( Tp r ) {
         {
             std::unique_lock<std::recursive_mutex> __lock(reply_mutex);
-            if (replys) {
-                replys->erase( r );
-            }
+            if (replys) {  replys->erase( r );  }
         }
     }
 
     ~BaiDuUserLoginNetworkAccessManager() {
         {
             std::unique_lock<std::recursive_mutex> __lock;
-            if (replys) {
-                replys.reset();//close all replys
-            }
+            if (replys) { replys.reset();/*/close all replys*/ }
         }
 
     }
@@ -118,7 +112,7 @@ public:
     ~BaiDuUserPrivate( );
 
     void setLogInPackData( BaiDuUserLoginPack * );
-    void connectLoginPack(BaiDuUserLoginPack *);
+    void connectLoginPack( BaiDuUserLoginPack *);
 
     void setChildrenPointer(QObject *  );
     QVariant getAllCookies()const;
@@ -170,7 +164,8 @@ private:
 
 signals:
     void loginFinished( bool,QString );
-    void setVertifyCode(QByteArray id_,QByteArray url_);
+    void setVertifyCode(QByteArray url_ ,QByteArray id_);
+
 public slots:
     void login(
             QString userName,

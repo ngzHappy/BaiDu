@@ -13,10 +13,18 @@
 #include <ciso646>
 #include <QtCore/qglobal.h>
 
+#if !defined( STATIC_NGZBAIDU_LIBRARY )
+
 #if defined(NGZBAIDU_LIBRARY)
 #  define NGZBAIDUSHARED_EXPORT Q_DECL_EXPORT
 #else
 #  define NGZBAIDUSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#else
+
+#define NGZBAIDUSHARED_EXPORT /*  */
+
 #endif
 
 

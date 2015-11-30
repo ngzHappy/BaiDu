@@ -91,7 +91,7 @@ void BaiDuUserLoginPack::finished(bool v,QString r) {
 }
 
 void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p) {
-
+    
     connect(p,&BaiDuUserLoginPack::loginFinished,this,&BaiDuUser::BaiDuUserPrivate::loginFinished);
 }
 
@@ -107,8 +107,8 @@ void BaiDuUser::BaiDuUserPrivate::login(
     BaiDuVertifyCode vertifyCode_
     ) {
 
-    auto * loginPack=new BaiDuUserLoginPack(this);
-    BaiDuUserLoginPackPointer pack(loginPack);
+    auto * loginPack=new BaiDuUserLoginPack( nullptr );
+    BaiDuUserLoginPackPointer pack( loginPack );
 
     //设置基本数据
     loginPack->userNameBase=userName;
@@ -211,7 +211,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
                                 if (bool(thisPointer)==false) { if (errorFunction) { errorFunction->finished(false,"endl"); }return; }
 
                                 //emit 验证码
-                                thisPointer->setVertifyCode( vc_.id,vc_.url );
+                                thisPointer->setVertifyCode( vc_.url,vc_.id );
 
                             },
                                 errorFunction);
@@ -245,6 +245,7 @@ BaiDuUser::BaiDuUser(QObject * o):QObject(o) {
     }
     connect(this,&BaiDuUser::login,thisp.get(),&BaiDuUser::BaiDuUserPrivate::login);
     connect(thisp.get(),&BaiDuUser::BaiDuUserPrivate::loginFinished,this,&BaiDuUser::loginFinished);
+    connect(thisp.get(),&BaiDuUser::BaiDuUserPrivate::setVertifyCode,this,&BaiDuUser::loginVerifyCodeURL);
 }
 
 #define _zfunt cct::func< decltype( &BaiDuUser::BaiDuUser::setUserAgent ) >
@@ -322,6 +323,8 @@ BaiDuUser::~BaiDuUser() {
     auto _thisp=std::move(thisp);
     if (_thisp) {
         _thisp->isOnDestory.store(true);
+        disconnect(this,nullptr,_thisp.get(),nullptr);
+        disconnect(_thisp.get(),nullptr,this,nullptr);
         _thisp.reset();
     }
 

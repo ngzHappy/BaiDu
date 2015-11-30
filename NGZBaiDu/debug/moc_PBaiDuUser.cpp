@@ -194,8 +194,8 @@ void BaiDuUserLoginPack::loginFinished(bool _t1, QString _t2)
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 struct qt_meta_stringdata_BaiDuUser__BaiDuUserPrivate_t {
-    QByteArrayData data[8];
-    char stringdata0[96];
+    QByteArrayData data[11];
+    char stringdata0[120];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -207,16 +207,19 @@ static const qt_meta_stringdata_BaiDuUser__BaiDuUserPrivate_t qt_meta_stringdata
 QT_MOC_LITERAL(0, 0, 27), // "BaiDuUser::BaiDuUserPrivate"
 QT_MOC_LITERAL(1, 28, 13), // "loginFinished"
 QT_MOC_LITERAL(2, 42, 0), // ""
-QT_MOC_LITERAL(3, 43, 5), // "login"
-QT_MOC_LITERAL(4, 49, 8), // "userName"
-QT_MOC_LITERAL(5, 58, 8), // "passWord"
-QT_MOC_LITERAL(6, 67, 16), // "BaiDuVertifyCode"
-QT_MOC_LITERAL(7, 84, 11) // "vertifyCode"
+QT_MOC_LITERAL(3, 43, 14), // "setVertifyCode"
+QT_MOC_LITERAL(4, 58, 4), // "url_"
+QT_MOC_LITERAL(5, 63, 3), // "id_"
+QT_MOC_LITERAL(6, 67, 5), // "login"
+QT_MOC_LITERAL(7, 73, 8), // "userName"
+QT_MOC_LITERAL(8, 82, 8), // "passWord"
+QT_MOC_LITERAL(9, 91, 16), // "BaiDuVertifyCode"
+QT_MOC_LITERAL(10, 108, 11) // "vertifyCode"
 
     },
     "BaiDuUser::BaiDuUserPrivate\0loginFinished\0"
-    "\0login\0userName\0passWord\0BaiDuVertifyCode\0"
-    "vertifyCode"
+    "\0setVertifyCode\0url_\0id_\0login\0userName\0"
+    "passWord\0BaiDuVertifyCode\0vertifyCode"
 };
 #undef QT_MOC_LITERAL
 
@@ -226,24 +229,26 @@ static const uint qt_meta_data_BaiDuUser__BaiDuUserPrivate[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       1,       // signalCount
+       2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    2,   24,    2, 0x06 /* Public */,
+       1,    2,   29,    2, 0x06 /* Public */,
+       3,    2,   34,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    3,   29,    2, 0x0a /* Public */,
+       6,    3,   39,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::Bool, QMetaType::QString,    2,    2,
+    QMetaType::Void, QMetaType::QByteArray, QMetaType::QByteArray,    4,    5,
 
  // slots: parameters
-    QMetaType::Void, QMetaType::QString, QMetaType::QString, 0x80000000 | 6,    4,    5,    7,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString, 0x80000000 | 9,    7,    8,   10,
 
        0        // eod
 };
@@ -255,7 +260,8 @@ void BaiDuUser::BaiDuUserPrivate::qt_static_metacall(QObject *_o, QMetaObject::C
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->loginFinished((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 1: _t->login((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< BaiDuVertifyCode(*)>(_a[3]))); break;
+        case 1: _t->setVertifyCode((*reinterpret_cast< QByteArray(*)>(_a[1])),(*reinterpret_cast< QByteArray(*)>(_a[2]))); break;
+        case 2: _t->login((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< BaiDuVertifyCode(*)>(_a[3]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -265,6 +271,12 @@ void BaiDuUser::BaiDuUserPrivate::qt_static_metacall(QObject *_o, QMetaObject::C
             typedef void (BaiDuUserPrivate::*_t)(bool , QString );
             if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&BaiDuUserPrivate::loginFinished)) {
                 *result = 0;
+            }
+        }
+        {
+            typedef void (BaiDuUserPrivate::*_t)(QByteArray , QByteArray );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&BaiDuUserPrivate::setVertifyCode)) {
+                *result = 1;
             }
         }
     }
@@ -295,13 +307,13 @@ int BaiDuUser::BaiDuUserPrivate::qt_metacall(QMetaObject::Call _c, int _id, void
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 3)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }
@@ -311,5 +323,12 @@ void BaiDuUser::BaiDuUserPrivate::loginFinished(bool _t1, QString _t2)
 {
     void *_a[] = { Q_NULLPTR, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
+}
+
+// SIGNAL 1
+void BaiDuUser::BaiDuUserPrivate::setVertifyCode(QByteArray _t1, QByteArray _t2)
+{
+    void *_a[] = { Q_NULLPTR, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
+    QMetaObject::activate(this, &staticMetaObject, 1, _a);
 }
 QT_END_MOC_NAMESPACE

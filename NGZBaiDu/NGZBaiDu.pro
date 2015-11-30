@@ -28,6 +28,10 @@ HEADERS += $$PWD/ngzbaidu_global.hpp
 
 INCLUDEPATH += $$PWD/../cct
 
-
+include( $$PWD/../out_path.pri )
+DESTDIR = $$PROJECT_OUT_PATH
 
 ###############
+
+
+

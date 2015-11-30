@@ -30,7 +30,7 @@ class NGZBAIDUSHARED_EXPORT BaiDuUser :
     Q_OBJECT
 public:
 
-    BaiDuUser( QObject * );
+    BaiDuUser( QObject * = nullptr );
     ~BaiDuUser();
 public:
 
@@ -52,7 +52,16 @@ signals:
             BaiDuVertifyCode vertifyCode
             );
 
+    /*
+    登录成功返回true
+    否则返回 false,以及失败原因
+    */
     void loginFinished( bool,QString );
+
+    /*
+    验证码 url id
+    */
+    void loginVerifyCodeURL( QByteArray,QByteArray );
 
 public:
     class BaiDuUserPrivate;
