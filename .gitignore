@@ -31,3 +31,8 @@ NGZBaiDuTest/debug/qrc_LoginInDialog.cpp
 NGZBaiDuTest/debug/moc_PBaiDuUser.cpp
 BaiDuTieBa/release/qrc_LoginInDialog.cpp
 BaiDuTieBa/release/moc_LogInDialog.cpp
+NGZBaiDuTest/release/moc_BaiDuUser.cpp
+NGZBaiDuTest/release/moc_PBaiDuUser.cpp
+NGZBaiDuTest/release/qrc_LoginInDialog.cpp
+NGZBaiDuTest/release/moc_MainWindow.cpp
+NGZBaiDuTest/release/moc_LogInDialog.cpp

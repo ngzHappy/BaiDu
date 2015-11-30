@@ -905,16 +905,16 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
 
             {
                 //https://passport.baidu.com/cgi-bin/genimage?
-                const std::string & gv_=ansMap["codeString"];
-                if (gv_.empty()==false) {
+                const auto & gv_=ansMap["codeString"];
+                if (gv_.empty()==false) { /*如果有验证码*/
                     //验证码
-                    if (fp) { fp->finished(false,"验证码"_qutf8); }
+                    if (fp) { fp->finished(false,u8"验证码"_qutf8); }
                     BaiDuVertifyCode vc_;
-                    vc_.url=QByteArray("https://passport.baidu.com/cgi-bin/genimage?")+gv_.c_str();
-                    vc_.id =QByteArray(gv_.c_str());
+                    /*验证码网址*/vc_.url = QByteArray("https://passport.baidu.com/cgi-bin/genimage?")+gv_.c_str();
+                    /*验证码id  */vc_.id  = QByteArray(gv_.c_str());
                     if (fun) { fun(vc_,fp); }
+                    return;
                 }
-                return;
             }
 
             if (fp) { fp->finished(false,error_); }
