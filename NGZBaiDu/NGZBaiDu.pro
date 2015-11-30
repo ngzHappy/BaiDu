@@ -16,12 +16,14 @@ TEMPLATE = lib
 DEFINES += NGZBAIDU_LIBRARY
 
 SOURCES += NGZBaiDu.cpp \
-    BaiDuTieBa.cpp
+    BaiDuTieBa.cpp \
+    TieBaFormatData.cpp
 SOURCES += BaiDuUser.cpp
 SOURCES += private/GZipCompressor.cpp
 
 HEADERS += $$PWD/NGZBaiDu.hpp \
-    BaiDuNetworkAccessManager.hpp
+    BaiDuNetworkAccessManager.hpp \
+    TieBaFormatData.hpp
 HEADERS += $$PWD/BaiDuTieBa.hpp
 HEADERS += $$PWD/private/PBaiduTieBa.hpp
 HEADERS += $$PWD/BaiDuVertifyCode.hpp

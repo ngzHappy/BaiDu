@@ -39,3 +39,10 @@ NGZBaiDuTest/release/moc_LogInDialog.cpp
 NGZBaiDu/debug/moc_BaiDuTieBa.cpp
 NGZBaiDu/debug/moc_PBaiduTieBa.cpp
 *.autosave
+NGZBaiDu/debug/moc_BaiDuNetworkAccessManager.cpp
+NGZBaiDuTest/release/moc_BaiDuNetworkAccessManager.cpp
+NGZBaiDuTest/release/moc_BaiDuTieBa.cpp
+NGZBaiDu/release/moc_BaiDuNetworkAccessManager.cpp
+NGZBaiDu/release/moc_PBaiduTieBa.cpp
+NGZBaiDu/release/moc_BaiDuTieBa.cpp
+NGZBaiDuTest/release/moc_PBaiduTieBa.cpp

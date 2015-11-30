@@ -24,6 +24,8 @@ INCLUDEPATH += $$PWD/../NGZBaiDu
 INCLUDEPATH += $$PWD/../BaiDuTieBa
 
 SOURCES += main.cpp
+SOURCES += $$PWD/../NGZBaiDu/BaiDuTieBa.cpp
+SOURCES += $$PWD/../NGZBaiDu/TieBaFormatData.cpp
 SOURCES += $$PWD/../NGZBaiDu/private/GZipCompressor.cpp
 SOURCES += $$PWD/../NGZBaiDu/private/PBaiDuUser.cpp
 SOURCES += $$PWD/../BaiDuTieBa/LogInDialog.cpp
@@ -32,6 +34,11 @@ SOURCES += $$PWD/../NGZBaiDu/BaiDuUser.cpp
 SOURCES += $$PWD/../NGZBaiDu/NGZBaiDu.cpp
 
 HEADERS  += $$PWD/../BaiDuTieBa/LogInDialog.hpp
+HEADERS  += $$PWD/../NGZBaiDu/BaiDuFinishedCallBack.hpp
+HEADERS  += $$PWD/../NGZBaiDu/BaiDuNetworkAccessManager.hpp
+HEADERS  += $$PWD/../NGZBaiDu/BaiDuTieBa.hpp
+HEADERS  += $$PWD/../NGZBaiDu/private/PBaiduTieBa.hpp
+SOURCES  += $$PWD/../NGZBaiDu/TieBaFormatData.hpp
 HEADERS  += $$PWD/../NGZBaiDu/private/GZipCompressor.hpp
 HEADERS  += $$PWD/../NGZBaiDu/private/PBaiDuUser.hpp
 HEADERS  += $$PWD/../BaiDuTieBa/MainWindow.hpp

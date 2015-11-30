@@ -4,6 +4,7 @@
 #include <CheckArgs.hpp>
 #include <QNetworkRequest>
 #include <QUrl>
+#include <QNetworkReply>
 #include <QNetworkCookieJar>
 #include <QScriptEngine>
 #include "BaiDuNetworkAccessManager.hpp"
@@ -101,7 +102,73 @@ void BaiDuTieBa::imgtbs(
     req.setRawHeader("User-Agent", u_->getUserAgent().first );
     req.setHeader(QNetworkRequest::CookieHeader, u_->getAllCookies() );
 
+    auto * r_ = manager_->get( req );
+    std::shared_ptr<QNetworkReply> rpl(r_,
+        [](QNetworkReply * d) { d->deleteLater(); });
     
+    manager_->addReply( rpl );
+    std::weak_ptr<QNetworkReply> rp_(rpl);
+    std::weak_ptr<BaiDuNetworkAccessManager> mn_( manager_ );
+    rpl->connect( rpl.get(),&QNetworkReply::finished,
+        [ fun , rp_ ,fp , mn_ ](  ) { 
+        try {
+            auto rp=rp_.lock(); auto mn=mn_.lock();
+            cct::check_args<ArgError>(rp,"endl ... ",mn,"endl .... ");
+            mn->removeReply(rp);
+            auto ans=rp->readAll();auto a1=ans.split('\"');
+            for (const auto &a:a1) {
+                if (a.size()>10) { return fun(a,fp);}
+            }
+            if (fp) { fp->finished(false,"null reply ... " +QString(__func__) ); }
+        }
+        catch ( const ArgError & e) {
+            if (fp) { fp->finished(false,e.what()); }
+        }
+    });
+
+}catch (const ArgError & e) {if (fp) { fp->finished(false,e.what()+" "+__func__ ); }}
+#undef _zfunc
+
+//static 
+#define _zfunc cct::FunctionType< decltype( &BaiDuTieBa::tbs ) > 
+void tbs(
+    _zfunc::_0 u_,
+    _zfunc::_1 fun,
+    _zfunc::_2 fp)try{
+    cct::check_args<ArgError>( u_,"null user",
+        fun ,"callbakc is null",
+        u_->isLogin(),"user is not login"
+        );
+
+    auto manager_ = u_->getManager();
+    cct::check_args<ArgError>( manager_,"network manager is null" );
+    QNetworkRequest req(QUrl("http://tieba.baidu.com/dc/common/tbs"));
+    req.setRawHeader("User-Agent", u_->getUserAgent().first );
+    req.setHeader(QNetworkRequest::CookieHeader, u_->getAllCookies() );
+
+    auto * r_ = manager_->get( req );
+    std::shared_ptr<QNetworkReply> rpl(r_,
+        [](QNetworkReply * d) { d->deleteLater(); });
+
+    manager_->addReply( rpl );
+    std::weak_ptr<QNetworkReply> rp_(rpl);
+    std::weak_ptr<BaiDuNetworkAccessManager> mn_( manager_ );
+    rpl->connect( rpl.get(),&QNetworkReply::finished,
+        [ fun , rp_ ,fp , mn_ ](  ) { 
+        try {
+            auto rp=rp_.lock(); auto mn=mn_.lock();
+            cct::check_args<ArgError>(rp,"endl ... ",mn,"endl .... ");
+            mn->removeReply(rp);
+            auto ans=rp->readAll();auto a1=ans.split('\"');
+            for (const auto &a:a1) {
+                if (a.size()>10) { return fun(a,fp);}
+            }
+            if (fp) { fp->finished(false,"null reply ... " +QString(__func__) ); }
+        }
+        catch ( const ArgError & e) {
+            if (fp) { fp->finished(false,e.what()); }
+        }
+    });
 
 }catch (const ArgError & e) {if (fp) { fp->finished(false,e.what()+" "+__func__ ); }}
 #undef _zfunc

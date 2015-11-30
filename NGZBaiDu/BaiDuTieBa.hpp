@@ -4,6 +4,7 @@
 #include "ngzbaidu_global.hpp"
 #include "BaiDuVertifyCode.hpp"
 #include "BaiDuFinishedCallBack.hpp"
+#include "TieBaFormatData.hpp" 
 #include <QObject>
 #include <UniqueSharedPointer.hpp>
 #include <functional>
@@ -26,6 +27,7 @@ public:
 
     static void mouse_pwd(QByteArray now_ ,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer  ) ;
     static void imgtbs(std::shared_ptr< BaiDuUser >,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );
+    static void tbs(std::shared_ptr< BaiDuUser >,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );
 signals:
 
 public slots:
