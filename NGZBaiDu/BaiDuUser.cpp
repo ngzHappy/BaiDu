@@ -250,7 +250,7 @@ void BaiDuUser::gid(
         char data[35];
     public:
         Array():data{
-                    toHex0[std::rand()&15],
+            toHex0[std::rand()&15],
             toHex0[std::rand()&15],
             toHex0[std::rand()&15],
             toHex0[std::rand()&15],

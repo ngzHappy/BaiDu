@@ -6,7 +6,8 @@ CONFIG   += c++14
 SOURCES  += main.cpp
 
 
-HEADERS +=$$PWD/Map.hpp
+HEADERS +=$$PWD/Map.hpp \
+    UniqueSharedPointer.hpp
 HEADERS +=$$PWD/FunctoinType.hpp
 HEADERS +=$$PWD/SharedFromSuper.hpp
 HEADERS +=$$PWD/String.hpp
