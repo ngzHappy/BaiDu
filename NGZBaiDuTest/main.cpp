@@ -25,7 +25,7 @@
         }
             );
     });
-    u->login(QString::fromUtf8(u8"南瓜猪的的的"),"918637oO");
+
 */
 
 int main(int argc, char *argv[])
