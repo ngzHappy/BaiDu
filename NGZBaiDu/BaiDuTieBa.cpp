@@ -12,6 +12,10 @@
 #include <cstddef>
 #include <QBuffer>
 #include <regex>
+#include <QCoreApplication>
+#include <QDir>
+#include <QDataStream>
+#include <QTextCodec>
 
 namespace {
 
@@ -195,15 +199,12 @@ void BaiDuTieBa::setBaiDuUser(std::shared_ptr<BaiDuUser> u) {
             connect( r,&QNetworkReply::finished,
                 this,[ wm,wr,wu ]() {
                 try {
-                    auto m=wm.lock();
-                    auto r=wr.lock();
+                    auto m=wm.lock();auto r=wr.lock();
                     cct::check_args< ArgError>(m,"",r,"");
                     m->removeReply(r);
-                    auto u=wu.lock();
-                    cct::check_args< ArgError>(u,"");
+                    auto u=wu.lock();cct::check_args< ArgError>(u,"");
                     auto rdata=r->rawHeaderPairs();
-                    auto c=u->getCookies();
-                    cct::check_args< ArgError>(c,"");
+                    auto c=u->getCookies();cct::check_args< ArgError>(c,"");
                     auto & allCookies = * u->getCookies() ;
                     for (const auto & i : rdata ) {
                         if (i.first == "Set-Cookie") {
@@ -216,8 +217,7 @@ void BaiDuTieBa::setBaiDuUser(std::shared_ptr<BaiDuUser> u) {
                     }
 
                 }
-                catch (const ArgError &  ) {
-                }
+                catch (const ArgError &  ) { }
             }
                 );
 
@@ -503,8 +503,8 @@ void BaiDuTieBa::image2html(
                     auto evans_ = eng.evaluate("iurl = "+all_data);
                     cct::check_args<ArgError>(!evans_.isError() ,"post image error!!!");
                     evans_=eng.evaluate(u8R"(iurl["info"]["pic_id_encode"])");
-                    cct::check_args<ArgError>(!evans_.isError() ,"post image error!!!!"
-                        +all_data
+                    cct::check_args<ArgError>(!evans_.isError() , "post image error!!!!"
+                        +QString( all_data )
                         );
                     auto ii=TieBaTextImageType( nullptr );
                     ii.width = eng.evaluate(u8R"(iurl["info"]["fullpic_width"])").toString();
@@ -533,12 +533,14 @@ catch (const ArgError & e) {
 
 void BaiDuTieBa::images2html(
     QByteArray        fid_   ,
+    QList<QString>    images_names_,
     QList<QImage>     images_,
     std::function<void(cct::List<TieBaTextImageType>,BaiDuFinishedCallBackPointer)> fun ,
     BaiDuFinishedCallBackPointer fp ) try{
     
     cct::check_args<ArgError>( !fid_.isEmpty(),"fid is emperty",
         !images_.isEmpty(),"images is null",
+        (images_names_.size() == images_.size()),"???",
         fun,"callback is null"
         );
 
@@ -574,15 +576,269 @@ void BaiDuTieBa::images2html(
     pack_->image_count=all_size_;
     pack_->error_call_back=fp;
     pack_->call_back=fun;
+    
+    auto ib = images_names_.cbegin();
     for (const auto & i:images_) {
-        image2html(fid_,i,[pack_](TieBaTextImageType item, BaiDuFinishedCallBackPointer ) mutable {
+        QString image_local_name__ = *ib;
+        image2html(fid_,i,[pack_,image_local_name__ ](TieBaTextImageType item, BaiDuFinishedCallBackPointer ) mutable {
+            item.localPath=std::shared_ptr<QString>( new QString(image_local_name__) );
             pack_->ans_data->push_back( item );
         },
             pack_ );
+        ++ib;
     }
 
 }
 catch (const ArgError & e) {
+    if (fp) { fp->finished(false,e.what()+ " " +__func__); }
+}
+
+void BaiDuTieBa::localTieBa2BaiDuTieBa(
+    QByteArray /*fid*/ fid_,
+    QString dir_,
+    std::shared_ptr<TieBaFormatData> ldata_,
+    std::function<void(std::shared_ptr<TieBaFormatData>,BaiDuFinishedCallBackPointer)> fun,
+    BaiDuFinishedCallBackPointer fp) try{
+
+    cct::check_args<ArgError>( 
+        fun,"callback is null",
+        ldata_,"data is null",
+        !( ldata_->empty() ),"data is null."
+        );
+    
+    QList<QString > about_to_post_names_;
+    QList<QImage> about_post_images_;
+    for ( auto & j:*ldata_ ) {
+        if (j.isImage) {
+            if (j.startsWith("http://")) { continue; }
+            about_post_images_.push_back( QImage(dir_+"/"+QString(j)));
+            about_to_post_names_.push_back(j);
+        }
+    }
+
+    if ( about_to_post_names_.empty() ) {
+        return fun(ldata_,fp);
+    }
+
+    std::shared_ptr<TieBaFormatData> ans=TieBaFormatData::instance() ;
+    *ans=*ldata_;//copy data
+
+    images2html(
+        fid_,
+        about_to_post_names_,
+        about_post_images_,
+        [ans,fun](
+        cct::List<TieBaTextImageType> html_images_,
+        BaiDuFinishedCallBackPointer  fp
+        ) mutable {
+
+        if (bool(html_images_)==false) {if (fp) { fp->finished(false,"?!?@?"); }return;}
+
+        auto & m = ans->localPath2HtmlPath ;
+        for (const auto & i: *html_images_) {
+            if (i.localPath) {
+                m[ *(i.localPath) ] = i;
+            }
+        }
+        html_images_->clear();
+
+        for ( auto & i:(*ans) ) {
+            if (i.isImage) {
+                if (i.startsWith("http://")) { continue; }
+                auto ip_ = m.find( i );
+                if (ip_ != m.end()) {i=ip_->second;}
+            }
+        }
+
+        m.clear();
+
+        fun( ans,fp );
+
+    },fp);
+
+}catch (const ArgError & e) {
+    if (fp) { fp->finished(false,e.what()+ " " +__func__); }
+}
+
+namespace {
+namespace BaiDuTieBa__{
+/*操作系统回收资源*/
+std::recursive_mutex * mutex = nullptr ;
+/*操作系统回收资源*/
+std::map<QString,QByteArray> * fidMap = nullptr  ;
+
+void read() {
+    auto dir_ = QCoreApplication::applicationDirPath();
+    {
+        QDir dir(dir_);
+        dir.mkdir(dir_+"/data");
+        dir.mkdir(dir_+"/data/tid");
+    }
+
+    QString fileName(dir_+"/data/tid/tid.txt");
+    QFile file( fileName);
+
+    if (file.exists()) {
+        file.open(QIODevice::ReadOnly);
+        QDataStream stream(&file);
+        stream.setVersion(QDataStream::Version::Qt_5_5);
+        QString key; QByteArray value;
+        auto & fid=*fidMap;
+        while (stream.atEnd()==false) {
+            stream>>key;
+            stream>>value;
+            fid[key]=value;
+        }
+    }
+    else {
+        file.open(QIODevice::WriteOnly);
+    }
+
+}//read
+ 
+void write() {
+    auto dir_ = QCoreApplication::applicationDirPath();
+    QString fileName(dir_+"/data/tid/tid.txt");
+    QFile file( fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        QDataStream stream(&file);
+        stream.setVersion(QDataStream::Version::Qt_5_5);
+        auto & fid= *fidMap ;
+        for (const auto & i: fid ) {
+            stream<<i.first;
+            stream<<i.second;
+        }
+
+    }
+
+}//write
+
+void inster(QString k,QByteArray v) {
+    std::unique_lock<std::recursive_mutex> _(*mutex);
+    auto & fid=*fidMap;
+    fid[k.toLower()]=v;
+}
+
+QByteArray find( QString name_ ){
+    std::unique_lock<std::recursive_mutex> _(*mutex);
+    auto & fid = *fidMap;
+    auto pos_ = fid.find( name_.toLower() );
+    if (pos_!=fid.end()) { return pos_->second; }
+    return QByteArray();
+}
+
+
+class Locker {
+public:
+    Locker() {
+        if (mutex) { return; }
+        mutex=new std::recursive_mutex;
+        std::unique_lock<std::recursive_mutex> _(*mutex);
+        fidMap=new std::map<QString,QByteArray>;
+        auto & fid=*fidMap;
+        /*先将包含特殊符号的贴吧存储*/
+        fid.insert({u8"C++"_qutf8,"20975"});
+        fid.insert({u8"c++"_qutf8,"20975"});
+        fid.insert({u8"c#"_qutf8,"20998"});
+        fid.insert({u8"C#"_qutf8,"20998"});
+        /*读入以前访问过的贴吧*/
+        read();
+    }
+    ~Locker() {
+        /*析构就不必加锁了*/
+        /*保存访问过的贴吧*/
+        write();
+    }
+};
+
+}
+}
+
+void BaiDuTieBa::fid(
+    std::shared_ptr< BaiDuUser > u,
+    QString /*贴吧名字*/ tbname ,
+    std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> fun,
+    BaiDuFinishedCallBackPointer fp) try{
+    static BaiDuTieBa__::Locker __locker__;
+    tbname=tbname.trimmed();
+    
+    cct::check_args<ArgError>(fun,"callback is null");
+    auto ans = BaiDuTieBa__::find( tbname );
+
+    if (ans.isEmpty()==false) { return fun(ans,fp); }
+
+    cct::check_args<ArgError>(u,"user is null");
+    auto m = u->getManager();
+    cct::check_args<ArgError>(m,"manager is null");
+
+    //http://tieba.baidu.com/f?kw=%E7%BE%8E%E5%89%A7&ie=utf-8
+    QByteArray url_="http://tieba.baidu.com/f?kw="
+        +tbname.toUtf8().toPercentEncoding()
+        +"&ie=utf-8";
+    QUrl url(url_);
+    QNetworkRequest req(url);
+
+    req.setRawHeader("User-Agent", u->getUserAgent().first );
+    req.setRawHeader("Accept-Encoding", "gzip, deflate");
+    req.setRawHeader("Connection", "keep-alive");
+    req.setRawHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+
+    auto * r=m->get( req );
+    std::shared_ptr< QNetworkReply > rp(r,[](QNetworkReply * d) {d->deleteLater(); });
+    std::weak_ptr< QNetworkReply > wr( rp );
+    std::weak_ptr< BaiDuNetworkAccessManager > wm(m);
+    m->addReply(rp);
+
+    r->connect(r,&QNetworkReply::finished,
+        [tbname,wr,wm,fun,fp]() {
+        auto r=wr.lock();
+        auto m=wm.lock();
+        try {
+            cct::check_args<ArgError>(r,"",m,"");
+            m->removeReply(r);
+            QByteArray ans=r->readAll();
+            ans=gzip::QCompressor::gzipDecompress(ans);
+            cct::check_args<ArgError>(!ans.isEmpty(),"can not find tieba ");
+
+            const char * begin=ans.constBegin();
+            const char * end=ans.constEnd();
+
+            std::cmatch match;
+            if (std::regex_search(begin, end, match, std::regex("PageData.forum"))) {
+                begin=match[0].second;
+                if (std::regex_search(begin, end, match, std::regex(R"('id':)"))) {
+                    begin=match[0].second;
+                    QString ans;
+                    for (; begin!=end; ++begin) {
+                        if ((*begin>='0')&&(*begin<='9')) {
+                            break;
+                        }
+                    }
+                    for (; begin!=end; ++begin) {
+                        if ((*begin>='0')&&(*begin<='9')) {
+                            ans.push_back(*begin);
+                            continue;
+                        }break;
+                    }
+
+                    BaiDuTieBa__::inster( tbname, ans.trimmed().toUtf8()  );
+                    fun(ans.trimmed().toUtf8(),fp);
+                }
+                else {
+                    throw ArgError("id:");
+                }
+            }
+            else {
+                throw ArgError("PageData.forum");
+            }
+
+        }
+        catch (const ArgError & e) {
+            if (fp) { fp->finished(false,e.what()+ " " +__func__); }
+        }
+    });
+
+}catch (const ArgError & e) {
     if (fp) { fp->finished(false,e.what()+ " " +__func__); }
 }
 

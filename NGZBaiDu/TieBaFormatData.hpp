@@ -21,6 +21,7 @@ public:
     QString width         ;
     QString height        ;
     QString type          ;// jpeg ="1";
+    std::shared_ptr<QString> localPath ;//此变量只有内部使用
     bool isImage=false;
     TieBaTextImageType & operator=(const QString & v) {
         QString::operator=(v);

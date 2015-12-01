@@ -26,11 +26,13 @@ public:
     std::shared_ptr<BaiDuUser> getBaiDuUser()const;
     void setBaiDuUser( std::shared_ptr<BaiDuUser> );
 
-    void images2html(QByteArray /*fid*/, QList<QImage>,std::function<void(cct::List<TieBaTextImageType>,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer);
+    void localTieBa2BaiDuTieBa( QByteArray /*fid*/,QString/*local dir*/ ,std::shared_ptr<TieBaFormatData>,std::function<void(std::shared_ptr<TieBaFormatData>,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer);
+    void images2html(QByteArray /*fid*/,QList<QString>, QList<QImage>,std::function<void(cct::List<TieBaTextImageType>,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer);
     void image2html(QByteArray /*fid*/, QImage,std::function<void(TieBaTextImageType,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer);
     static void mouse_pwd(QByteArray now_ ,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer  ) ;
     static void imgtbs(std::shared_ptr< BaiDuUser >,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );
     static void tbs(std::shared_ptr< BaiDuUser >,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );
+    static void fid( std::shared_ptr< BaiDuUser >,QString /*贴吧名字*/ ,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer   );
 signals:
 
 public slots:
