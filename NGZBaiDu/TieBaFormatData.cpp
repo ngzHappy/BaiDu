@@ -10,36 +10,6 @@
 
 QString TieBaTextImageType::temp_null_data_;
 
-TieBaFormatData::TieBaFormatData(){
-
-}
-
-TieBaFormatData::~TieBaFormatData(){
-
-}
-
-TieBaTextImageType::TieBaTextImageType()
-    :QString( temp_null_data_ ),
-    width(temp_null_data_),
-    height(temp_null_data_),
-    type(temp_null_data_){
-
-}
-
-std::shared_ptr<TieBaFormatData > TieBaFormatData::instance() {
-    auto * d=new TieBaFormatData;
-    return std::shared_ptr<TieBaFormatData >(d,[](auto *p) {delete p; });
-}
-
-namespace {
-class TieBaFormatDataReadError {
-    QString what_;
-public:
-    const QString & what() const { return what_; }
-    TieBaFormatDataReadError(const QString &v) { what_=v; }
-};
-}
-
 namespace
 {
 // '\t', '\n', '\v', '\f', '\r', and ' '.
@@ -64,6 +34,115 @@ QString trimAfter(QString data) {
 
 }
 
+}
+
+TieBaFormatData::TieBaFormatData(){
+
+}
+
+TieBaFormatData::~TieBaFormatData(){
+
+}
+
+TieBaTextImageType::TieBaTextImageType()
+    :QString( temp_null_data_ ),
+    width(temp_null_data_),
+    height(temp_null_data_),
+    type(temp_null_data_){
+
+}
+
+void TieBaFormatData::read(const QString & fileName) {
+
+    QFile file( fileName );
+    if (file.exists()==false) { return; }
+    this->clear();
+    if (false==file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        return;
+    }
+    QTextStream stream( &file );
+    stream.setCodec( QTextCodec::codecForName("UTF-8") );
+
+    bool isDataRead=false;
+    while ( stream.atEnd()==false ) {
+        QString line=stream.readLine();
+        
+        if ( line.startsWith("<:/image>") ) {
+            TieBaTextImageType item = line.mid(9).trimmed() ;
+            item.isImage=true;
+            if ( item.startsWith("http://") ) {
+                auto a=item.split("!!!");
+                if (a.size()!=4) { return; }
+                auto i_=a.cbegin();
+                item=*i_++; item.width=*i_++; item.height=*i_++; item.type=*i_++;
+            }
+            isDataRead=true;
+            push_back( item );
+            continue;
+        }
+
+        if (line.startsWith("<:/text>")) {
+            TieBaTextImageType item = line.mid(8)+"\n" ;
+            item.isImage=false;
+            isDataRead=true;
+            push_back(item);
+            continue;
+        }
+
+        if (isDataRead) {
+            if (empty()) { return; }
+            auto & i = *(this->rbegin());
+            i.push_back( line+"\n" );
+            continue;
+        }
+
+    }
+
+    for (auto & i:*this) {
+        if ( i.isImage ) { continue; }
+        i=trimAfter(i);
+    }
+
+}
+
+void TieBaFormatData::write(const QString & fileName) {
+
+    QFile file( fileName );
+    if (false==file.open(QIODevice::WriteOnly)) { return; }
+    if (empty()) { return; }
+    QTextStream stream( &file );
+    stream.setCodec( QTextCodec::codecForName("UTF-8") );
+
+    for (const auto & i:*this) {
+        if (i.isImage) {
+            if (i.startsWith("http://")) {
+                stream<<"<:/image>"<<i<<"!!!"<<i.width<<"!!!"<<i.height<<"!!!"<<i.type; 
+                stream<<'\n';
+            }
+            else {
+                stream<<i<<'\n';
+            }
+        }
+        else {
+            stream<<"<:/text>"<<i;
+        }
+    }
+    
+
+}
+
+std::shared_ptr<TieBaFormatData > TieBaFormatData::instance() {
+    auto * d=new TieBaFormatData;
+    return std::shared_ptr<TieBaFormatData >(d,[](auto *p) {delete p; });
+}
+
+namespace {
+class TieBaFormatDataReadError {
+    QString what_;
+public:
+    const QString & what() const { return what_; }
+    TieBaFormatDataReadError(const QString &v) { what_=v; }
+};
 }
 
 void BaiDuTieBaFormatDatas::read(const QString & filename) try{

@@ -56,6 +56,9 @@ public:
     
     std::map<QString,TieBaTextImageType> localPath2HtmlPath;
 
+    void read(const QString &);
+    void write(const QString &);
+
 protected:
     ~TieBaFormatData();
 private:
