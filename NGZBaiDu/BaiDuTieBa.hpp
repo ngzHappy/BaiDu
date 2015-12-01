@@ -8,9 +8,10 @@
 #include <QObject>
 #include <UniqueSharedPointer.hpp>
 #include <functional>
+#include <QImage>
+#include <List.hpp>
 
 class BaiDuUser;
-
 class BaiDuTieBaPrivate ;
 
 class NGZBAIDUSHARED_EXPORT BaiDuTieBa :
@@ -25,6 +26,8 @@ public:
     std::shared_ptr<BaiDuUser> getBaiDuUser()const;
     void setBaiDuUser( std::shared_ptr<BaiDuUser> );
 
+    void images2html(QByteArray /*fid*/, QList<QImage>,std::function<void(cct::List<TieBaTextImageType>,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer);
+    void image2html(QByteArray /*fid*/, QImage,std::function<void(TieBaTextImageType,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer);
     static void mouse_pwd(QByteArray now_ ,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer  ) ;
     static void imgtbs(std::shared_ptr< BaiDuUser >,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );
     static void tbs(std::shared_ptr< BaiDuUser >,std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>,BaiDuFinishedCallBackPointer );

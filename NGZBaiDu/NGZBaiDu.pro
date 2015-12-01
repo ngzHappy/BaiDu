@@ -15,9 +15,9 @@ TEMPLATE = lib
 
 DEFINES += NGZBAIDU_LIBRARY
 
-SOURCES += NGZBaiDu.cpp \
-    BaiDuTieBa.cpp \
-    TieBaFormatData.cpp
+SOURCES += NGZBaiDu.cpp
+SOURCES += BaiDuTieBa.cpp
+SOURCES += TieBaFormatData.cpp
 SOURCES += BaiDuUser.cpp
 SOURCES += private/GZipCompressor.cpp
 
