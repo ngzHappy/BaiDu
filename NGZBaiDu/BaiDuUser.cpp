@@ -109,7 +109,7 @@ void BaiDuUser::BaiDuUserPrivate::connectLoginPack(BaiDuUserLoginPack * p) {
 void BaiDuUser::BaiDuUserPrivate::upDateGID(BaiDuFinishedCallBackPointer fp) {
 
     auto & gid__=this->gid;
-    BaiDuUser::gid([&gid__](auto ans,auto) { gid__=ans; },fp);
+    BaiDuUser::gid([&gid__](auto ans,auto) { gid__=std::move( ans ) ; },fp);
 }
 
 void BaiDuUser::BaiDuUserPrivate::login(
@@ -122,8 +122,8 @@ void BaiDuUser::BaiDuUserPrivate::login(
     BaiDuUserLoginPackPointer pack(loginPack);
 
     //设置基本数据
-    loginPack->userNameBase=userName;
-    loginPack->passWordBase=passWord;
+    loginPack->userNameBase=std::move( userName );
+    loginPack->passWordBase=std::move( passWord );
 
     //连接信号槽
     connectLoginPack(loginPack);

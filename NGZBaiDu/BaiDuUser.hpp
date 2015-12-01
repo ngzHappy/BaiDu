@@ -5,10 +5,10 @@
 #include <QVariant>
 #include <map>
 #include <functional>
-#include <UniqueSharedPointer.hpp>
 #include "ngzbaidu_global.hpp"
 #include "BaiDuVertifyCode.hpp"
 #include "BaiDuFinishedCallBack.hpp"
+#include <UniqueSharedPointer.hpp>
 class BaiDuNetworkAccessManager;
 
 class NGZBAIDUSHARED_EXPORT BaiDuUser :
@@ -20,8 +20,8 @@ public:
     ~BaiDuUser();
 public:
 
-    static void gid( std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer );
-    static void currentTimer( std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> ,BaiDuFinishedCallBackPointer);
+    static void gid(const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> &,BaiDuFinishedCallBackPointer );
+    static void currentTimer(const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> &,BaiDuFinishedCallBackPointer);
 public:
 
     void setUserAgent(const QByteArray & , bool isPhone = false );
@@ -58,7 +58,7 @@ public:
     friend class BaiDuUserPrivate;
 private:
 
-    cct::unique_shared_ptr< BaiDuUserPrivate > thisp  ;
+    cct::unique_shared_ptr< BaiDuUserPrivate > thisp ;
 };
 
 

@@ -25,6 +25,21 @@ QString operator""_qutf8(const char * d,std::size_t n) {
 
 }
 
+namespace {
+
+template<typename IB, typename IE>
+QByteArray toHtmlUrl(QByteArray ans, IB b, IE e) {
+
+    for (; b!=e; ++b) {
+        const auto & first_=b->first;
+        const auto & second_=b->second;
+        ans.append("&"+first_+"="+second_);
+    }
+    return std::move(ans);
+}
+
+}
+
 namespace
 {
 namespace  baidutieba_
@@ -179,7 +194,8 @@ std::shared_ptr<BaiDuUser> BaiDuTieBa::getBaiDuUser()const {
     return thisp->baiDuUser;
 }
 
-void BaiDuTieBa::setBaiDuUser(std::shared_ptr<BaiDuUser> u) {
+#define _zfunc cct::FunctionType< decltype( &BaiDuTieBa::setBaiDuUser ) >
+void BaiDuTieBa::setBaiDuUser( _zfunc::_0 u ) {
     if (u) { if ( u->isLogin() ) { 
         thisp->baiDuUser=u; 
         //设置 tieba cookie
@@ -228,10 +244,12 @@ void BaiDuTieBa::setBaiDuUser(std::shared_ptr<BaiDuUser> u) {
         thisp->baiDuUser.reset();
     }
 }
+#undef _zfunc
 
 BaiDuTieBa::~BaiDuTieBa(){
 
     if (thisp) {
+        thisp->isOnDestory.store(true);
         disconnect(this,nullptr,thisp.get(),nullptr);
         disconnect(thisp.get(),nullptr,this,nullptr);
         thisp.reset();
@@ -245,7 +263,7 @@ BaiDuTieBaPrivate::BaiDuTieBaPrivate(){
 }
 
 BaiDuTieBaPrivate::~BaiDuTieBaPrivate(){
-
+    isOnDestory.store(true);
 }
 
 SendTieBaDataPack::SendTieBaDataPack() {
@@ -382,8 +400,8 @@ QByteArray get_rand_name() {
 }
 }
 
-#define _zfunc cct::FunctionType< decltype( &BaiDuTieBa::image2html ) >
-void BaiDuTieBa::image2html(
+#define _zfunc cct::FunctionType< decltype( &BaiDuTieBaPrivate::image2html ) >
+void BaiDuTieBaPrivate::image2html(
     _zfunc::_r3 fid_  ,
     _zfunc::_r2 image_,
     _zfunc::_r1 fun   ,
@@ -393,12 +411,11 @@ void BaiDuTieBa::image2html(
         !fid_.isEmpty(),"fid is null",
         !image_.isNull(),"image is null",
         fun,"callback is null",
-        thisp,"this is null",
-        thisp->baiDuUser,"user is null",
-        thisp->baiDuUser->isLogin(),"user is not login"
+        baiDuUser,"user is null",
+        baiDuUser->isLogin(),"user is not login"
         );
 
-    auto u=thisp->baiDuUser;
+    auto u= baiDuUser;
     /*设置百度贴吧图像最大宽度为360*/
     enum { MaxImageWidth = 360 };
     if (image_.width() > MaxImageWidth ) {
@@ -420,8 +437,8 @@ void BaiDuTieBa::image2html(
 
     {image_=QImage();/*clear image*/ }
 
-    std::weak_ptr<BaiDuTieBaPrivate> wthisp(thisp);
-    imgtbs(u,[u,fid_,fun,imageData,wthisp](QByteArray itbs_,_zfunc::_r0 fp) {
+    auto wthisp = thisp;
+    BaiDuTieBa::imgtbs(u,[u,fid_,fun,imageData,wthisp](QByteArray itbs_,_zfunc::_r0 fp) {
         try {
             auto thisp=wthisp.lock();
             cct::check_args<ArgError>(thisp,"endl ");
@@ -531,12 +548,13 @@ catch (const ArgError & e) {
 }
 #undef _zfunc
 
-void BaiDuTieBa::images2html(
-    QByteArray        fid_   ,
-    QList<QString>    images_names_,
-    QList<QImage>     images_,
-    std::function<void(cct::List<TieBaTextImageType>,BaiDuFinishedCallBackPointer)> fun ,
-    BaiDuFinishedCallBackPointer fp ) try{
+#define _zfunc cct::FunctionType< decltype(&BaiDuTieBaPrivate::images2html ) >
+void BaiDuTieBaPrivate::images2html(
+    _zfunc::_r4 fid_   ,
+    _zfunc::_r3 images_names_,
+    _zfunc::_r2 images_,
+    _zfunc::_r1 fun ,
+    _zfunc::_r0 fp ) try{
     
     cct::check_args<ArgError>( !fid_.isEmpty(),"fid is emperty",
         !images_.isEmpty(),"images is null",
@@ -592,13 +610,15 @@ void BaiDuTieBa::images2html(
 catch (const ArgError & e) {
     if (fp) { fp->finished(false,e.what()+ " " +__func__); }
 }
+#undef _zfunc
 
-void BaiDuTieBa::localTieBa2BaiDuTieBa(
-    QByteArray /*fid*/ fid_,
-    QString dir_,
-    std::shared_ptr<TieBaFormatData> ldata_,
-    std::function<void(std::shared_ptr<TieBaFormatData>,BaiDuFinishedCallBackPointer)> fun,
-    BaiDuFinishedCallBackPointer fp) try{
+#define _zfunc cct::FunctionType< decltype(&BaiDuTieBaPrivate::localTieBa2BaiDuTieBa ) >
+void BaiDuTieBaPrivate::localTieBa2BaiDuTieBa(
+    _zfunc::_r4 /*fid*/ fid_,
+    _zfunc::_r3 dir_,
+    _zfunc::_r2 ldata_,
+    _zfunc::_r1 fun,
+    _zfunc::_r0 fp) try{
 
     cct::check_args<ArgError>( 
         fun,"callback is null",
@@ -659,6 +679,7 @@ void BaiDuTieBa::localTieBa2BaiDuTieBa(
 }catch (const ArgError & e) {
     if (fp) { fp->finished(false,e.what()+ " " +__func__); }
 }
+#undef _zfunc
 
 namespace {
 namespace BaiDuTieBa__{
@@ -754,11 +775,12 @@ public:
 }
 }
 
+#define _zfunc cct::FunctionType< decltype(&BaiDuTieBa::fid) >
 void BaiDuTieBa::fid(
-    std::shared_ptr< BaiDuUser > u,
-    QString /*贴吧名字*/ tbname ,
-    std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> fun,
-    BaiDuFinishedCallBackPointer fp) try{
+    _zfunc::_r3 u,
+    _zfunc::_r2 /*贴吧名字*/ tbname ,
+    _zfunc::_r1 fun,
+    _zfunc::_r0 fp) try{
     static BaiDuTieBa__::Locker __locker__;
     tbname=tbname.trimmed();
     
@@ -841,6 +863,233 @@ void BaiDuTieBa::fid(
 }catch (const ArgError & e) {
     if (fp) { fp->finished(false,e.what()+ " " +__func__); }
 }
+#undef _zfunc
+
+QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data) {
+    if (bool(data)==false) { return QByteArray(); }
+    if (data->empty()) { return QByteArray(); }
+    QByteArray about_post_;
+    for (const auto & i: (*data) ) {
+        if (i.isImage) {
+            QByteArray img__;
+            img__.append("%5Bimg");
+            img__.append("+""pic_type%3D1");//type 1
+            img__.append("+""width%3D"    +i.width );//
+            img__.append("+""height%3D"   +i.height);//
+            img__.append("%5D");
+            img__.append(i.toUtf8().toPercentEncoding()  );
+            img__.append("%5B%2Fimg%5D");
+            about_post_.append( img__  );
+        }
+        else {
+            about_post_.append( i.toUtf8().toPercentEncoding() );
+        }
+    }
+    return about_post_;
+}
+
+#define _zfunc cct::FunctionType< decltype(&BaiDuTieBaPrivate::sendDetail ) >
+void BaiDuTieBaPrivate::sendDetail(
+    _zfunc::_0  tbname,_zfunc::_1  ttitle,
+    _zfunc::_2  data,_zfunc::_3  tbs,
+    _zfunc::_4  vc,_zfunc::_r2 fid,
+    _zfunc::_r1 fun,_zfunc::_r0 fp) try{
+
+    auto thisPointer = thisp.lock();
+    cct::check_args<ArgError>(thisPointer,"endl");
+    auto u=thisPointer->baiDuUser;
+    cct::check_args<ArgError>(u,"endl");
+    cct::check_args<ArgError>(u->isLogin(),"endl");
+    auto m=u->getManager();
+    cct::check_args<ArgError>(m,"endl");
+
+    QByteArray postdata="ie=utf-8";
+    {
+        QByteArray ctime_;
+        BaiDuUser::currentTimer([&ctime_](auto ans,auto) { ctime_=ans; },fp);
+        if (fp) { if (fp->hasError) { return; } }
+        QByteArray mouse_pwd_;
+        BaiDuTieBa::mouse_pwd(ctime_,[&mouse_pwd_](auto ans,auto) {
+            mouse_pwd_=ans;
+        },fp);
+        if (fp) { if (fp->hasError) { return; } }
+        std::pair<QByteArray,QByteArray> post_[]={
+            //{"ie","utf-8"},
+            {"kw", tbname.toUtf8().toPercentEncoding()},
+            {"fid",fid },/*fid is a num*/
+            {"tid","0"}, /*发帖tid为0*/
+            {"vcode_md5", vc.id },/*验证码*/
+            {"floor_num","0"},/*发帖floor_num为0*/
+            {"rich_text","1"},
+            {"tbs",tbs },
+            {"content", data },  /*数据*/
+            {"title"  , ttitle.toUtf8().toPercentEncoding() }, /*标题*/
+            {"prefix" ,  "" },
+            {"files","%5B%5D"},//[]
+            {"mouse_pwd",mouse_pwd_},
+            {"mouse_pwd_t",ctime_},
+            {"mouse_pwd_isclick","0"},
+            {"__type__","thread"},
+        };
+        postdata=toHtmlUrl(postdata,std::begin(post_),std::end(post_));
+    }
+    QNetworkRequest req(QUrl("http://tieba.baidu.com/f/commit/thread/add"));
+    {
+        static auto * tcodec=QTextCodec::codecForName("gbk");
+        QByteArray gbk_tname=tcodec->fromUnicode(tbname ).toPercentEncoding();
+        req.setRawHeader("User-Agent", u->getUserAgent().first );
+        req.setRawHeader("Host", "tieba.baidu.com");
+        req.setRawHeader("Accept", "application/json, text/javascript, */*; q=0.01");
+        req.setRawHeader("Accept-Language", "zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3");
+        req.setRawHeader("Accept-Encoding", "gzip, deflate");
+        req.setRawHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        req.setRawHeader("X-Requested-With", "XMLHttpRequest");
+        req.setRawHeader("Pragma", "no-cache");
+        req.setRawHeader("Cache-Control", "no-cache");
+        req.setRawHeader("Referer", "http://tieba.baidu.com/f?kw="+gbk_tname+"&fr=index");
+        req.setHeader(QNetworkRequest::CookieHeader,u->getAllCookies() );
+    }
+
+    auto rp = m->post(req,postdata);
+    std::shared_ptr< QNetworkReply > r(rp);
+    std::weak_ptr< QNetworkReply > wr(r);
+    std::weak_ptr< BaiDuNetworkAccessManager > wm(m);
+    m->addReply(r);
+    auto thisp_ = thisp;
+    rp->connect(rp,&QNetworkReply::finished,
+        [thisp_ ,wm,wr,fp,fun]() {
+        auto w=wm.lock();
+        auto r=wr.lock();
+        try {
+            cct::check_args<ArgError>(w,"endl");
+            cct::check_args<ArgError>(r,"endl");
+            w->removeReply(r);
+            auto thisp = thisp_.lock();
+            cct::check_args<ArgError>(thisp,"endl");
+
+            auto data_=gzip::QCompressor::gzipDecompress(r->readAll());
+            cct::check_args<ArgError>(!data_.isEmpty(),"endl");
+
+            qDebug()<<data_;
+
+            do{//
+                QScriptEngine eng;
+                auto ans__ = eng.evaluate("jsvalue="+data_);
+
+                if(ans__.isError()){
+                    throw ArgError("json error");
+                }
+
+                auto no_ = eng.evaluate(u8R"(jsvalue["no"])").toString() ;
+                auto err_code_ = eng.evaluate(u8R"(jsvalue["err_code"])").toInt32() ;
+
+                //ok
+                if( no_ == "0"){break;}
+
+                /*
+                {"no":40,"err_code":40,"error":"","data":{"autoMsg":"","fid":2256767,"fname":"\u57ac","tid":0,"is_login":1,"content":"","vcode":{"need_vcode":1,"str_reason":"\u8bf7\u70b9\u51fb\u9a8c\u8bc1\u7801\u5b8c\u6210\u53d1\u8d34","captcha_vcode_str":"captchaservice3263343573514d4c58506d47427467306b4d49594d62306b2f482f533156707a506241615249423739662b326e46342b49714d542b342b6a6352465673794944336a32736e385476345969545a4736792b3352393943676c34686762647730777931772b76782b6459716f50477539343572446b574d6d6c41644b5378544e49345456706f70774b75326b7370476f6b554f546438396d73596d667772753233597776752b6962446255394a62566e4844512f4c356d3855324b75517076527857426e41546b485a4232596a7236514c5548597036614c30684c744e532f37326465434c62616b557955545761722b507a6d4e593037594b4c586a67682f44357a51744f494a6250744e674a6f79774b6b5648314a334d4c50786c744b44444b47484c4e39446c7533473770735077385754574b","captcha_code_type":4,"userstatevcode":0}}}
+                */
+
+                QString vcdoe = eng.evaluate(u8R"(jsvalue["data"]["vcode"]["captcha_vcode_str"])").toString();
+                if ( vcdoe.size() > 16 ) {
+                    /*验证码网址*/
+                    thisp->vertifyCode(vcdoe.toUtf8(),vcdoe.toUtf8());
+                    throw ArgError(QString::fromUtf8(u8"验证码") );
+                }
+                qDebug()<<data_;
+
+                auto i_ = baidutieba_::error_code.find(err_code_);
+                if ( i_!=baidutieba_::error_code.end() ) {
+                    throw ArgError( QString::fromUtf8(i_->second) );
+                }
+                else {
+                    throw ArgError( QString::fromUtf8(u8"未知错误"+data_));
+                }
+
+            }while(0);
+
+            if (fp) { fp->finished(true,""); }
+            return fun("",fp) ;
+
+        }
+        catch (const ArgError & e) {
+            if (fp) { fp->finished(false,e.what()); }
+        }
+    });
+}
+catch (const ArgError & e) {
+    if (fp) { fp->finished(false,e.what()+" "+__func__); }
+}
+#undef _zfunc
+
+#define _zfunc cct::FunctionType< decltype(&BaiDuTieBaPrivate::send ) >
+void BaiDuTieBaPrivate::send(
+    _zfunc::_0 tbname ,
+    _zfunc::_1 ttitle,
+    _zfunc::_2 localdir,
+    _zfunc::_r3 tdata,
+    _zfunc::_r2 vc,
+    _zfunc::_r1 fun,
+    _zfunc::_r0 fp
+    ) try{
+
+    const auto __thisp = thisp.lock() ;
+    cct::check_args<ArgError>( 
+        !tbname.isEmpty(),"tbname is null",
+        !ttitle.isEmpty(),"tbname is null",
+        fun,"callback is null",
+        tdata,"tdata is null",
+        !tdata->empty(),"tdata is null",
+        __thisp,"thisp is null"
+        );
+
+    auto u= baiDuUser;
+    cct::check_args<ArgError>(u,"baidu user is null");
+    cct::check_args<ArgError>(u->isLogin() ,"baidu user is not login");
+    
+    auto pack=std::make_shared< SendTieBaDataPack >();
+    pack->thisp = this->thisp;
+    pack->tbname=tbname;
+    pack->ttitle=ttitle;
+    pack->vcode =vc;
+    pack->localDir=localdir;
+
+    typedef BaiDuFinishedCallBackPointer EP;
+    BaiDuTieBa::fid(u,tbname,[pack , tdata=std::move(tdata) ,fun ](QByteArray fid,EP fp) {
+        try {
+            auto thisp=pack->thisp.lock();
+            cct::check_args<ArgError>(thisp,"endl");
+            pack->fid=fid;
+            thisp->localTieBa2BaiDuTieBa(
+                fid,
+                pack->localDir,
+                tdata,
+                [fun ,pack](
+                std::shared_ptr<TieBaFormatData> tdata,
+                EP fp
+                ) {
+                auto thisp=pack->thisp.lock();
+                if (bool(thisp)==false) { if (fp) { fp->finished(false,"endl"); }return; }
+                if (fp->hasError) { return; }
+                QByteArray about_post_ = genPostData( tdata );
+                if (about_post_.isEmpty()) { if (fp) { fp->finished(false,"post data is null"); }return; }
+                thisp->sendDetail(pack->tbname,pack->ttitle,about_post_,
+                    pack->tbs,pack->vcode,pack->fid,fun,fp);
+
+            },
+                fp);
+
+        }
+        catch (const ArgError & e) {
+            if (fp) { fp->finished(false,e.what()); }
+        }
+    },pack);
+
+}
+catch (const ArgError & e) {
+    if (fp) { fp->finished(false,e.what()+ " " +__func__); }
+}
+#undef _zfunc 
 
 /*
  * endl of the file
