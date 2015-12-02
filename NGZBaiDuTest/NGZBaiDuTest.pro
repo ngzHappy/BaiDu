@@ -6,6 +6,7 @@ QT       += network
 QT       += script
 QT       += widgets
 QT       += quick
+CONFIG   += console
 
 DEFINES *= STATIC_NGZBAIDU_LIBRARY
 TARGET = NGZBaiDuTest
@@ -46,7 +47,8 @@ HEADERS  += $$PWD/../NGZBaiDu/BaiDuUser.hpp
 HEADERS  += $$PWD/../NGZBaiDu/NGZBaiDu.hpp
 HEADERS  += $$PWD/../NGZBaiDu/ngzbaidu_global.hpp
 
-RESOURCES += $$PWD/../BaiDuTieBa/LoginInDialog.qrc
+RESOURCES += $$PWD/../BaiDuTieBa/LoginInDialog.qrc \
+    ../BaiDuTieBa/MainWindow.qrc
 
 DISTFILES += $$PWD/../BaiDuTieBa/LogInDialog.qml
 

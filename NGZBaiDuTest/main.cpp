@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
     /*初始化opengl渲染环境*/
     if (argc>1) { QApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);/*Qt::AA_UseSoftwareOpenGL*/ }
 
+    MainWindow m;
+    m.show();
+
     /*登录*/
     LogInDialog * dialog_login=new LogInDialog;
 

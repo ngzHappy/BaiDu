@@ -1,15 +1,15 @@
 ﻿#ifndef MAINWINDOW_HPP
 #define MAINWINDOW_HPP
 
-#include <QMainWindow>
- 
+#include <QQuickView>
+#include <memory>
 
-class MainWindow : public QMainWindow
+class MainWindow : public QQuickView
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow( );
     ~MainWindow();
 };
 

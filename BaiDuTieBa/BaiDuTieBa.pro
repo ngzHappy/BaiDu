@@ -35,6 +35,7 @@ DESTDIR = $$PROJECT_OUT_PATH
 
 LIBS += -L$$PROJECT_OUT_PATH -lNGZBaiDu
 
-RESOURCES += LoginInDialog.qrc
+RESOURCES += LoginInDialog.qrc \
+    MainWindow.qrc
 
 

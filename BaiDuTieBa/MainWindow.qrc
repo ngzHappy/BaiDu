@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>MainWindow.qml</file>
+        <file>vctest.png</file>
+        <file>BaiDuTieBaVertifyCode.qml</file>
+    </qresource>
+</RCC>
