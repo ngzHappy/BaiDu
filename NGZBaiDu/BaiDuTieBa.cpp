@@ -1,5 +1,6 @@
 ﻿#include "private/PBaiduTieBa.hpp"
 #include "private/GZipCompressor.hpp"
+#include "BaiDuNetworkAccessManager.hpp"
 #include "BaiDuTieBa.hpp"
 #include <FunctionType.hpp>
 #include <CheckArgs.hpp>
@@ -8,7 +9,6 @@
 #include <QNetworkReply>
 #include <QNetworkCookieJar>
 #include <QScriptEngine>
-#include "BaiDuNetworkAccessManager.hpp"
 #include <cstddef>
 #include <QBuffer>
 #include <regex>
@@ -16,6 +16,7 @@
 #include <QDir>
 #include <QDataStream>
 #include <QTextCodec>
+#include <QDebug>
 
 namespace {
 
@@ -187,7 +188,13 @@ BaiDuTieBa::BaiDuTieBa(QObject *parent) :
     thisp->thisp = thisp;
 
     /*connect signals ans slot*/
-
+    connect(this,&BaiDuTieBa::send,
+        thisp.get(),&BaiDuTieBaPrivate::sendData);
+    connect(thisp.get(),&BaiDuTieBaPrivate::sendDataFinished,
+        this,&BaiDuTieBa::finishedSend
+        );
+    connect(thisp.get(),&BaiDuTieBaPrivate::vertifyCode,
+        this,&BaiDuTieBa::vertifyCode );
 }
 
 std::shared_ptr<BaiDuUser> BaiDuTieBa::getBaiDuUser()const {
@@ -196,8 +203,8 @@ std::shared_ptr<BaiDuUser> BaiDuTieBa::getBaiDuUser()const {
 
 #define _zfunc cct::FunctionType< decltype( &BaiDuTieBa::setBaiDuUser ) >
 void BaiDuTieBa::setBaiDuUser( _zfunc::_0 u ) {
-    if (u) { if ( u->isLogin() ) { 
-        thisp->baiDuUser=u; 
+    if (u) { if ( u->isLogin() ) {
+        thisp->baiDuUser=u;
         //设置 tieba cookie
         if (u->getCookies()->find("TIEBAUID") == u->getCookies()->end()) {
             QNetworkRequest req( QUrl{ "http://tieba.baidu.com/f?ie=utf-8&kw=%E9%B2%9C%E4%B8%BA%E4%BA%BA%E7%9F%A5&fr=search" } )  ;
@@ -240,7 +247,7 @@ void BaiDuTieBa::setBaiDuUser( _zfunc::_0 u ) {
         }
 
     } }
-    else { 
+    else {
         thisp->baiDuUser.reset();
     }
 }
@@ -266,10 +273,23 @@ BaiDuTieBaPrivate::~BaiDuTieBaPrivate(){
     isOnDestory.store(true);
 }
 
-SendTieBaDataPack::SendTieBaDataPack() {
+SendTieBaDataPack::SendTieBaDataPack() {    
+}
+
+void SendTieBaDataPack::finished(bool v,QString d) {
+    if (isValueSet) { return; }
+    isValueSet=true;
+    hasError_=!v;
+    sendFinished(v,d);
+
 }
 
 SendTieBaDataPack::~SendTieBaDataPack() {
+
+    if (isValueSet) {}
+    else {
+        sendFinished(false,"??? /SendTieBaDataPack::~SendTieBaDataPack endl ");
+    }
 }
 
 //static
@@ -371,12 +391,6 @@ void BaiDuTieBa::tbs(
 }catch (const ArgError & e) {if (fp) { fp->finished(false,e.what()+" "+__func__ ); }}
 #undef _zfunc
 
-void SendTieBaDataPack::finished(bool v,QString) {
-    isValueSet=true;
-    hasError=!v;
-
-}
-
 namespace
 {
 QByteArray get_rand_name() {
@@ -456,7 +470,7 @@ void BaiDuTieBaPrivate::image2html(
                     + get_rand_name() +
                     "\"" "\r\n" ;
                 postData+="Content-Type: image/jpg"  "\r\n" "\r\n" ;
-                postData+=imageData; 
+                postData+=imageData;
             }
 
             for(;;){
@@ -508,7 +522,7 @@ void BaiDuTieBaPrivate::image2html(
             m->addReply( rpl );std::weak_ptr< QNetworkReply> wrp(rpl);
             std::weak_ptr< BaiDuNetworkAccessManager > wm( m );
 
-            r->connect(r,&QNetworkReply::finished, 
+            r->connect(r,&QNetworkReply::finished,
                 [fun,fp,wrp,wm]() {
                 try {
                     auto m=wm.lock();auto r=wrp.lock();
@@ -555,7 +569,7 @@ void BaiDuTieBaPrivate::images2html(
     _zfunc::_r2 images_,
     _zfunc::_r1 fun ,
     _zfunc::_r0 fp ) try{
-    
+
     cct::check_args<ArgError>( !fid_.isEmpty(),"fid is emperty",
         !images_.isEmpty(),"images is null",
         (images_names_.size() == images_.size()),"???",
@@ -571,7 +585,7 @@ void BaiDuTieBaPrivate::images2html(
     public:
         FinishedPack() {}
         ~FinishedPack() {
-            
+
             if (error_call_back) { if (image_count != int(ans_data->size()) ) {
                 error_call_back->finished(false,"some picture post error!");
             } }
@@ -583,7 +597,7 @@ void BaiDuTieBaPrivate::images2html(
             }
 
         }
-        void finished(bool v, QString) override { hasError=!v; }
+        void finished(bool v, QString) override { hasError_=!v; }
         int image_count;
         cct::List<TieBaTextImageType> ans_data;
         BaiDuFinishedCallBackPointer error_call_back;
@@ -594,7 +608,7 @@ void BaiDuTieBaPrivate::images2html(
     pack_->image_count=all_size_;
     pack_->error_call_back=fp;
     pack_->call_back=fun;
-    
+
     auto ib = images_names_.cbegin();
     for (const auto & i:images_) {
         QString image_local_name__ = *ib;
@@ -620,12 +634,12 @@ void BaiDuTieBaPrivate::localTieBa2BaiDuTieBa(
     _zfunc::_r1 fun,
     _zfunc::_r0 fp) try{
 
-    cct::check_args<ArgError>( 
+    cct::check_args<ArgError>(
         fun,"callback is null",
         ldata_,"data is null",
         !( ldata_->empty() ),"data is null."
         );
-    
+
     QList<QString > about_to_post_names_;
     QList<QImage> about_post_images_;
     for ( auto & j:*ldata_ ) {
@@ -716,7 +730,7 @@ void read() {
     }
 
 }//read
- 
+
 void write() {
     auto dir_ = QCoreApplication::applicationDirPath();
     QString fileName(dir_+"/data/tid/tid.txt");
@@ -783,7 +797,7 @@ void BaiDuTieBa::fid(
     _zfunc::_r0 fp) try{
     static BaiDuTieBa__::Locker __locker__;
     tbname=tbname.trimmed();
-    
+
     cct::check_args<ArgError>(fun,"callback is null");
     auto ans = BaiDuTieBa__::find( tbname );
 
@@ -907,12 +921,12 @@ void BaiDuTieBaPrivate::sendDetail(
     {
         QByteArray ctime_;
         BaiDuUser::currentTimer([&ctime_](auto ans,auto) { ctime_=ans; },fp);
-        if (fp) { if (fp->hasError) { return; } }
+        if (fp) { if (fp->hasError() ) { return; } }
         QByteArray mouse_pwd_;
         BaiDuTieBa::mouse_pwd(ctime_,[&mouse_pwd_](auto ans,auto) {
             mouse_pwd_=ans;
         },fp);
-        if (fp) { if (fp->hasError) { return; } }
+        if (fp) { if (fp->hasError() ) { return; } }
         std::pair<QByteArray,QByteArray> post_[]={
             //{"ie","utf-8"},
             {"kw", tbname.toUtf8().toPercentEncoding()},
@@ -970,9 +984,10 @@ void BaiDuTieBaPrivate::sendDetail(
             auto data_=gzip::QCompressor::gzipDecompress(r->readAll());
             cct::check_args<ArgError>(!data_.isEmpty(),"endl");
 
-            qDebug()<<data_;
+            //qDebug()<<data_;
 
-            do{//
+            QByteArray tid_;
+            do{/**/
                 QScriptEngine eng;
                 auto ans__ = eng.evaluate("jsvalue="+data_);
 
@@ -984,7 +999,10 @@ void BaiDuTieBaPrivate::sendDetail(
                 auto err_code_ = eng.evaluate(u8R"(jsvalue["err_code"])").toInt32() ;
 
                 //ok
-                if( no_ == "0"){break;}
+                if( no_ == "0"){
+                    tid_ = eng.evaluate(u8R"(jsvalue["data"]["tid"])").toString().toUtf8();
+                    break;
+                }
 
                 /*
                 {"no":40,"err_code":40,"error":"","data":{"autoMsg":"","fid":2256767,"fname":"\u57ac","tid":0,"is_login":1,"content":"","vcode":{"need_vcode":1,"str_reason":"\u8bf7\u70b9\u51fb\u9a8c\u8bc1\u7801\u5b8c\u6210\u53d1\u8d34","captcha_vcode_str":"captchaservice3263343573514d4c58506d47427467306b4d49594d62306b2f482f533156707a506241615249423739662b326e46342b49714d542b342b6a6352465673794944336a32736e385476345969545a4736792b3352393943676c34686762647730777931772b76782b6459716f50477539343572446b574d6d6c41644b5378544e49345456706f70774b75326b7370476f6b554f546438396d73596d667772753233597776752b6962446255394a62566e4844512f4c356d3855324b75517076527857426e41546b485a4232596a7236514c5548597036614c30684c744e532f37326465434c62616b557955545761722b507a6d4e593037594b4c586a67682f44357a51744f494a6250744e674a6f79774b6b5648314a334d4c50786c744b44444b47484c4e39446c7533473770735077385754574b","captcha_code_type":4,"userstatevcode":0}}}
@@ -992,11 +1010,12 @@ void BaiDuTieBaPrivate::sendDetail(
 
                 QString vcdoe = eng.evaluate(u8R"(jsvalue["data"]["vcode"]["captcha_vcode_str"])").toString();
                 if ( vcdoe.size() > 16 ) {
-                    /*验证码网址*/
-                    thisp->vertifyCode(vcdoe.toUtf8(),vcdoe.toUtf8());
+                    /*验证码网址*/ /*验证码id*/
+                    const QByteArray id__=vcdoe.toUtf8();
+                    thisp->vertifyCode("http://tieba.baidu.com/cgi-bin/genimg?"+id__,id__);
                     throw ArgError(QString::fromUtf8(u8"验证码") );
                 }
-                qDebug()<<data_;
+                //qDebug()<<data_;
 
                 auto i_ = baidutieba_::error_code.find(err_code_);
                 if ( i_!=baidutieba_::error_code.end() ) {
@@ -1009,7 +1028,7 @@ void BaiDuTieBaPrivate::sendDetail(
             }while(0);
 
             if (fp) { fp->finished(true,""); }
-            return fun("",fp) ;
+            return fun( tid_ ,fp ) ;
 
         }
         catch (const ArgError & e) {
@@ -1024,17 +1043,18 @@ catch (const ArgError & e) {
 
 #define _zfunc cct::FunctionType< decltype(&BaiDuTieBaPrivate::send ) >
 void BaiDuTieBaPrivate::send(
-    _zfunc::_0 tbname ,
-    _zfunc::_1 ttitle,
-    _zfunc::_2 localdir,
-    _zfunc::_r3 tdata,
-    _zfunc::_r2 vc,
+    _zfunc::_r2 pack,
     _zfunc::_r1 fun,
     _zfunc::_r0 fp
     ) try{
 
+    cct::check_args<ArgError>(pack,"data is null");
+    auto & tbname=pack->tbname;
+    auto & ttitle=pack->ttitle;
+    auto & tdata=pack->content;
     const auto __thisp = thisp.lock() ;
-    cct::check_args<ArgError>( 
+    
+    cct::check_args<ArgError>(
         !tbname.isEmpty(),"tbname is null",
         !ttitle.isEmpty(),"tbname is null",
         fun,"callback is null",
@@ -1047,49 +1067,82 @@ void BaiDuTieBaPrivate::send(
     cct::check_args<ArgError>(u,"baidu user is null");
     cct::check_args<ArgError>(u->isLogin() ,"baidu user is not login");
     
-    auto pack=std::make_shared< SendTieBaDataPack >();
-    pack->thisp = this->thisp;
-    pack->tbname=tbname;
-    pack->ttitle=ttitle;
-    pack->vcode =vc;
-    pack->localDir=localdir;
-
     typedef BaiDuFinishedCallBackPointer EP;
-    BaiDuTieBa::fid(u,tbname,[pack , tdata=std::move(tdata) ,fun ](QByteArray fid,EP fp) {
-        try {
-            auto thisp=pack->thisp.lock();
-            cct::check_args<ArgError>(thisp,"endl");
-            pack->fid=fid;
-            thisp->localTieBa2BaiDuTieBa(
-                fid,
-                pack->localDir,
-                tdata,
-                [fun ,pack](
-                std::shared_ptr<TieBaFormatData> tdata,
-                EP fp
-                ) {
+    using namespace std;
+    BaiDuTieBa::tbs(u,[ fun=move(fun) ,tdata=move(tdata) ,pack,u ](QByteArray tbs_,EP fp) mutable {
+        const auto  & tbname=pack->tbname;
+        using namespace std;
+        pack->tbs=tbs_;
+
+        auto fid_call_back_ = [ fun  ,pack ,tdata ](QByteArray fid,EP fp) mutable{
+            try {
                 auto thisp=pack->thisp.lock();
-                if (bool(thisp)==false) { if (fp) { fp->finished(false,"endl"); }return; }
-                if (fp->hasError) { return; }
-                QByteArray about_post_ = genPostData( tdata );
-                if (about_post_.isEmpty()) { if (fp) { fp->finished(false,"post data is null"); }return; }
-                thisp->sendDetail(pack->tbname,pack->ttitle,about_post_,
-                    pack->tbs,pack->vcode,pack->fid,fun,fp);
+                cct::check_args<ArgError>(thisp,"endl");
+                pack->fid=fid;
+                thisp->localTieBa2BaiDuTieBa(
+                    fid,
+                    pack->localDir,
+                    tdata,
+                    [fun ,pack](
+                    std::shared_ptr<TieBaFormatData> tdata,
+                    EP fp
+                    ) {
+                    auto thisp=pack->thisp.lock();
+                    if (bool(thisp)==false) { if (fp) { fp->finished(false,"endl"); }return; }
+                    if (fp->hasError() ) { return; }
+                    QByteArray about_post_ = genPostData( tdata );
+                    if (about_post_.isEmpty()) { if (fp) { fp->finished(false,"post data is null"); }return; }
+                    thisp->sendDetail(pack->tbname,pack->ttitle,about_post_,
+                        pack->tbs,pack->vcode,pack->fid,fun ,fp);
 
-            },
-                fp);
+                },
+                    fp);
 
-        }
-        catch (const ArgError & e) {
-            if (fp) { fp->finished(false,e.what()); }
-        }
-    },pack);
+            }
+            catch (const ArgError & e) {
+                if (fp) { fp->finished(false,e.what()); }
+            }
+        };
+
+        BaiDuTieBa::fid(u,tbname, std::move(fid_call_back_) ,fp );
+
+    },pack );
 
 }
 catch (const ArgError & e) {
     if (fp) { fp->finished(false,e.what()+ " " +__func__); }
 }
-#undef _zfunc 
+#undef _zfunc
+
+void BaiDuTieBaPrivate::sendData(
+    QString tbname,
+    QString tbtitle,
+    QString tlocal,
+    QString tbdata,
+    BaiDuVertifyCode vc) {
+
+    auto item = TieBaFormatData::instance();
+    QTextStream stream( &tbdata );
+    item->read( stream );
+
+    typedef BaiDuFinishedCallBackPointer EP;
+    auto pack=std::make_shared< SendTieBaDataPack >();
+    pack->thisp=this->thisp;
+    pack->content=item;
+    pack->tbname=tbname;
+    pack->ttitle=tbtitle;
+    pack->localDir=tlocal;
+    pack->vcode=vc;
+
+    connect(pack.get(),&SendTieBaDataPack::sendFinished,
+        this,&BaiDuTieBaPrivate::sendDataFinished
+        );
+
+    send( pack ,[pack](QByteArray tid_ ,EP){
+        qDebug()<<tid_;
+    }, pack );
+
+}
 
 /*
  * endl of the file

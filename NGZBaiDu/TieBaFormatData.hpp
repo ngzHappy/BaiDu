@@ -6,6 +6,7 @@
 #include <map>
 #include "ngzbaidu_global.hpp"
 
+class QTextStream ;
 /*
 <:/title> 标题名
 <:/data>  表示一个新的记录
@@ -13,7 +14,7 @@
 <:/image> 图片相对路径
 */
 
-class NGZBAIDUSHARED_EXPORT TieBaTextImageType : 
+class NGZBAIDUSHARED_EXPORT TieBaTextImageType :
     public QString {
     static QString temp_null_data_;
 public:
@@ -36,12 +37,12 @@ public:
     TieBaTextImageType(const TieBaTextImageType &)=default;
     TieBaTextImageType(TieBaTextImageType &&)=default;
 
-}; 
+};
 
-class NGZBAIDUSHARED_EXPORT TieBaFormatData 
+class NGZBAIDUSHARED_EXPORT TieBaFormatData
     :public std::list< TieBaTextImageType >
 {
-public:     
+public:
 
     TieBaFormatData(  );
     TieBaFormatData( decltype(nullptr) ) {}
@@ -51,11 +52,13 @@ public:
 
     TieBaFormatData&operator=(const TieBaFormatData &) = default;
     TieBaFormatData&operator=(TieBaFormatData &&) = default;
-    
+
     static std::shared_ptr<TieBaFormatData> instance();
-    
+
     std::map<QString,TieBaTextImageType> localPath2HtmlPath;
 
+    void read(QTextStream &);
+    void write(QTextStream &);
     void read(const QString &);
     void write(const QString &);
 

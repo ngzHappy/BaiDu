@@ -61,7 +61,7 @@ void BaiDuUserLoginPack::finished(bool v,QString r) {
         if (super__) {super__->isLogIn=v; }
     }
     //TODO : log in finished
-    hasError=!v;
+    hasError_=!v;
     emit loginFinished(v,r);
     //just call once
 
@@ -145,7 +145,7 @@ void BaiDuUser::BaiDuUserPrivate::login(
 
     //更新gid
     upDateGID(pack);
-    if (pack->hasError) { return; }
+    if (pack->hasError()) { return; }
 
     typedef BaiDuFinishedCallBackPointer BCP_;
     auto thisp=thisPointer;
@@ -452,7 +452,7 @@ void BaiDuUser::BaiDuUserPrivate::getBaiduToken(
         const static QByteArray url_0("https://passport.baidu.com/v2/api/?getapi");
         QByteArray ctt;
         BaiDuUser::currentTimer([&ctt](auto ans,auto) {ctt=ans; },fp);
-        if (fp) { if (fp->hasError) { return; } }
+        if (fp) { if (fp->hasError() ) { return; } }
 
         std::pair< const QByteArray,const QByteArray > urlData[]{
             { "tpl","mn"}                   ,
@@ -539,7 +539,7 @@ void BaiDuUser::BaiDuUserPrivate::getRSAKey(
     //获得当前时间
     QByteArray ctt;
     BaiDuUser::currentTimer([&ctt](auto ans,auto) {ctt=ans; },fp);
-    if (fp) { if (fp->hasError) { return; } }
+    if (fp) { if (fp->hasError()) { return; } }
 
     QUrl rURL;
     {
@@ -634,6 +634,7 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
         return;
     }
 
+    QByteArray result_final_;
     {
         QCA::ConvertResult pubkey_isok_;
         QCA::PublicKey pubkey_=
@@ -655,15 +656,18 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
             QCA::EME_PKCS1v15_SSL
             );
 
-        QByteArray result=result_.toByteArray();
-        if (result_.isEmpty()) {
-            if (fp) { fp->finished(false,"BaiDuLogIn_Step3 : rsa encode error ! "); }
-            return;
+        {//deep copy data here 
+            QByteArray result(result_.constData(),result_.size());
+            result=result.toBase64();
+            result_final_=result.toPercentEncoding();
         }
-
-        fun(result.toBase64().toPercentEncoding(),fp);
-
     }
+
+    if (result_final_.isEmpty()) {
+        if (fp) { fp->finished(false,"rsa error !--"); }
+        return;
+    }
+    fun(result_final_,fp);
 
 }
 
@@ -713,7 +717,7 @@ void  BaiDuUser::BaiDuUserPrivate::postLogin(
     QByteArray current_time_;
 
     BaiDuUser::currentTimer([&current_time_](auto ans,auto) {current_time_=ans; },fp);
-    if (fp) { if (fp->hasError) { return; } }
+    if (fp) { if (fp->hasError()) { return; } }
 
     {
         std::pair< const QByteArray,const QByteArray > postData_[]{
@@ -890,7 +894,7 @@ void BaiDuUser::BaiDuUserPrivate::onLoginFinished(
         cct::check_args<ArgError>(rData.isEmpty()==false,"BaiDuLogIn_Step4 : empty reply ! ");
 
         auto ansMap=BaiDuLogIn_Step4::getAnsMap(rData,fp);
-        if (fp) { if (fp->hasError) { return; } }
+        if (fp) { if (fp->hasError()) { return; } }
 
         int err_no=0;
         if (ansMap["err_no"]!="0") {

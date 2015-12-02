@@ -52,21 +52,11 @@ TieBaTextImageType::TieBaTextImageType()
 
 }
 
-void TieBaFormatData::read(const QString & fileName) {
-
-    QFile file( fileName );
-    if (file.exists()==false) { return; }
-    this->clear();
-    if (false==file.open(QIODevice::ReadOnly|QIODevice::Text)) {
-        return;
-    }
-    QTextStream stream( &file );
-    stream.setCodec( QTextCodec::codecForName("UTF-8") );
-
+void TieBaFormatData::read(QTextStream & stream ){
     bool isDataRead=false;
     while ( stream.atEnd()==false ) {
         QString line=stream.readLine();
-        
+
         if ( line.startsWith("<:/image>") ) {
             TieBaTextImageType item = line.mid(9).trimmed() ;
             item.isImage=true;
@@ -100,23 +90,16 @@ void TieBaFormatData::read(const QString & fileName) {
 
     for (auto & i:*this) {
         if ( i.isImage ) { continue; }
-        i=trimAfter(i);
+        i=trimAfter(i)+"\n";
     }
-
 }
 
-void TieBaFormatData::write(const QString & fileName) {
-
-    QFile file( fileName );
-    if (false==file.open(QIODevice::WriteOnly)) { return; }
-    if (empty()) { return; }
-    QTextStream stream( &file );
-    stream.setCodec( QTextCodec::codecForName("UTF-8") );
+void TieBaFormatData::write(QTextStream & stream ){
 
     for (const auto & i:*this) {
         if (i.isImage) {
             if (i.startsWith("http://")) {
-                stream<<"<:/image>"<<i<<"!!!"<<i.width<<"!!!"<<i.height<<"!!!"<<i.type; 
+                stream<<"<:/image>"<<i<<"!!!"<<i.width<<"!!!"<<i.height<<"!!!"<<i.type;
                 stream<<'\n';
             }
             else {
@@ -127,8 +110,31 @@ void TieBaFormatData::write(const QString & fileName) {
             stream<<"<:/text>"<<i;
         }
     }
-    
 
+}
+
+void TieBaFormatData::read(const QString & fileName) {
+
+    QFile file( fileName );
+    if (file.exists()==false) { return; }
+    this->clear();
+    if (false==file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        return;
+    }
+    QTextStream stream( &file );
+    stream.setCodec( QTextCodec::codecForName("UTF-8") );
+    read(stream);
+
+}
+
+void TieBaFormatData::write(const QString & fileName) {
+
+    QFile file( fileName );
+    if (false==file.open(QIODevice::WriteOnly)) { return; }
+    if (empty()) { return; }
+    QTextStream stream( &file );
+    stream.setCodec( QTextCodec::codecForName("UTF-8") );
+    write(stream);
 }
 
 std::shared_ptr<TieBaFormatData > TieBaFormatData::instance() {
@@ -150,7 +156,7 @@ void BaiDuTieBaFormatDatas::read(const QString & filename) try{
     const static TieBaFormatDataReadError error_("error");
 
     QFile file( filename );
-    if (file.exists()==false) { 
+    if (file.exists()==false) {
         throw TieBaFormatDataReadError("can not find file");
     }
 
@@ -167,7 +173,7 @@ void BaiDuTieBaFormatDatas::read(const QString & filename) try{
 
     bool isTitleRead=false;
     bool isDataRead=false;
-    
+
     while (stream.atEnd()==false) {
 
         QString line=stream.readLine();
@@ -179,7 +185,7 @@ void BaiDuTieBaFormatDatas::read(const QString & filename) try{
         }
 
         if ( line.startsWith(u8R"(<:/title>)") ) {
-            if (isTitleRead) { 
+            if (isTitleRead) {
                 throw TieBaFormatDataReadError("multi title");/*只能有一个title*/
             }
             title=line.mid( 9 ).trimmed();
@@ -195,28 +201,28 @@ void BaiDuTieBaFormatDatas::read(const QString & filename) try{
 
         if (line.startsWith(u8R"(<:/text>)")) {
             if (empty()) { throw error_; }
-            auto & item_ =  *rbegin() ; 
+            auto & item_ =  *rbegin() ;
             item_->emplace_back( line.mid(8) );
             continue;
         }
 
         if ( line.startsWith(u8R"(<:/image>)") )  {
             if (empty()) { throw error_; }
-            auto & item_ =  *rbegin() ; 
+            auto & item_ =  *rbegin() ;
             item_->emplace_back( line.mid(9).trimmed(),true );
             continue;
         }
 
         //追加文本
         if ( empty() ) { throw error_; }
-        auto & item_ =  *rbegin() ; 
+        auto & item_ =  *rbegin() ;
         if ( item_->empty() ) { throw error_; }
         auto & item_data_text_ = * item_->rbegin();
         item_data_text_.push_back("\n");
         item_data_text_.push_back(line);
 
     }
-    
+
     {//删除多余空白
         for ( auto & i:(*this) ) {
             for ( auto & j : *i  ) {
@@ -229,7 +235,7 @@ void BaiDuTieBaFormatDatas::read(const QString & filename) try{
                         j=*f++; j.width=*f++; j.height=*f++; j.type=*f++;
                     }
                     else {
-                        j  = temp ; 
+                        j  = temp ;
                     }
                     continue;
                 }
@@ -255,7 +261,7 @@ void BaiDuTieBaFormatDatas::write(const QString & filename ) try{
     }
 
     stream.setCodec( QTextCodec::codecForName("UTF-8") );
-    
+
     int data_index=0;
     stream<<"<:/title>"<<title<<'\n';
     for ( auto & i:(*this) ) {
@@ -276,7 +282,7 @@ void BaiDuTieBaFormatDatas::write(const QString & filename ) try{
             stream<<j;
         }
     }
-    
+
 }catch ( const TieBaFormatDataReadError & e ) {
     qDebug()<<e.what();
 }

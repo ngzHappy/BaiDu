@@ -7,9 +7,9 @@ public:
     BaiDuFinishedCallBack(){}
     virtual ~BaiDuFinishedCallBack(){}
 
-    bool hasError = false;
-    virtual void finished(bool v, QString) { hasError=!v; }
-
+    bool hasError_ = false;
+    virtual void finished(bool v, QString) { hasError_=!v; }
+    virtual bool hasError() const final { return hasError_; }
 };
 typedef std::shared_ptr<BaiDuFinishedCallBack> BaiDuFinishedCallBackPointer;
 

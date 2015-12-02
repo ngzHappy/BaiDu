@@ -7,10 +7,21 @@ import QtGraphicalEffects 1.0
 
 Rectangle{
 
+    id : root
+    objectName: "MainWindowRoot"
     width : 512; height: 512;
+
+    signal sendData( string ttname ,string ttitle ,string tlocal,string tdata  )
+    function setContent( cvar_ ){ tcontentID.text = cvar_ }
+    function sendFinished( isok,whynotok ){
+        tSendDataID.enabled = true
+        if( isok ){ tErrorStringID.text =qsTr("发帖成功"); }
+        else{ tErrorStringID.text = whynotok; }
+    }
 
     BaiDuTieBaVertifyCode{
         id : vcCodeID
+        objectName: "VertifyCodeDialog"
         z: 100
         anchors.centerIn: parent
         visible: false
@@ -95,7 +106,14 @@ Rectangle{
                 id :tSendDataID
                 text: qsTr("发帖")
                 Layout.preferredHeight: 24; Layout.preferredWidth: 128
+                onClicked: {
+                    tSendDataID.enabled = false
+                    vcCodeID.visible = false
+                    console.log("aaaa")
+                    root.sendData( ttnameID.text,ttitleID.text,tlocalDirID.text,tcontentID.text )
+                }
             }
+
             Text {
                 id: tErrorStringID
                 text: qsTr("")
@@ -108,4 +126,5 @@ Rectangle{
 }
 
 /*
+
 */

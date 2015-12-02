@@ -8,19 +8,21 @@ import QtGraphicalEffects 1.0
 Rectangle{
     /*http://tieba.baidu.com/cgi-bin/genimg?captchaservice*/
     id : vcCodeRoot
-    objectName: "root"
+
     width : 240; height: 380;
     color : Qt.rgba(0.1,0.1,0.1,0.3)
     border.width: 0
 
     signal addItem( int itemID );
-    signal remove(  ) ;
+    signal removeItem(  ) ;
     function setItem( itemID,imageSource ){
+        if( vcCodeRoot.visible === false ){ vcCodeRoot.visible = true; }
         switch(itemID){
-        case 0:image_0.source = imageSource ;break;
-        case 1:image_1.source = imageSource ;break;
-        case 2:image_2.source = imageSource ;break;
-        case 3:image_3.source = imageSource ;break;
+            case 0:image_0.source = imageSource ;break;
+            case 1:image_1.source = imageSource ;break;
+            case 2:image_2.source = imageSource ;break;
+            case 3:image_3.source = imageSource ;break;
+            case 4:vcodeID.source = imageSource ;break;
         }
     }
 
@@ -75,7 +77,7 @@ Rectangle{
             id : vcodeID /*验证码*/
             width:  240
             height: 320
-            source: "vctest.png"
+            source: ""
             cache : false
             Layout.maximumHeight: 320;
             Layout.maximumWidth: 240;
@@ -89,7 +91,7 @@ Rectangle{
                 width: parent.width
                 height:(parent.height - parent.width)
                 acceptedButtons: Qt.LeftButton
-                onClicked: { vcCodeRoot.remove(  ) ;   }
+                onClicked: { vcCodeRoot.removeItem(  ) ;   }
             }
             MouseArea{
                 id : vc_0_ID

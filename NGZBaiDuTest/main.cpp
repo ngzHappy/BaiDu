@@ -10,24 +10,6 @@
 #include <MainWindow.hpp>
 #include <LogInDialog.hpp>
 
-/*
- *   auto t=std::make_shared<BaiDuTieBa>();
-    auto u=std::make_shared<BaiDuUser>();
-
-    u->connect(u.get(),&BaiDuUser::loginFinished,
-        [u,t](bool v) {
-        t->setBaiDuUser(u);
-        t->sendFormat(QString::fromUtf8(u8"土豆"),
-            "C:/Temp/BaiDuUser/xtest.txt");
-        t->connect( t.get(),&BaiDuTieBa::sendFinished,
-            [](QString _t1, QString _t2, bool _t3, QString _t4) {
-            qDebug()<<_t3<<_t4;
-        }
-            );
-    });
-
-*/
-
 int main(int argc, char *argv[])
 {
 
@@ -41,10 +23,9 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForLocale(QTextCodec::codecForName(TEXTCODECTYPE));
     /*初始化opengl渲染环境*/
     if (argc>1) { QApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);/*Qt::AA_UseSoftwareOpenGL*/ }
-
-    MainWindow m;
-    m.show();
-
+    
+    /*主窗口*/
+    MainWindow * mainWindow= new MainWindow;
     /*登录*/
     LogInDialog * dialog_login=new LogInDialog;
 
@@ -64,26 +45,27 @@ int main(int argc, char *argv[])
 
     /* 如果登录成功则显示主窗口 */
     dialog_login->connect(dialog_login, &LogInDialog::logInFinished,
-        [dialog_login](bool islogin) {
+        [dialog_login,mainWindow](bool islogin) {
         if (islogin) {
             auto user_=dialog_login->getUser();
-            delete dialog_login;
+            dialog_login->setVisible(false);
+            dialog_login->deleteLater();
+
             /*主窗口*/
-            MainWindow * mainWindow=new MainWindow;
-           // mainWindow->setBaiduUser(user_);
+            mainWindow->setBaiDuUser(user_);
+            mainWindow->show();
 
             {//move
                 int x, y, w, h;
 
                 auto rect=QApplication::desktop()->availableGeometry();
-                w=mainWindow->minimumWidth();
-                h=mainWindow->minimumHeight();
+                w= 512;
+                h= 512;
                 x=std::abs(rect.width()-w)/2;
                 y=std::abs(rect.height()-h)/2;
 
                 mainWindow->setGeometry(x, y, w, h);
-                mainWindow->show();
-                mainWindow->setGeometry(x, y, w, h);
+                mainWindow->postShow();
             }
 
         }
