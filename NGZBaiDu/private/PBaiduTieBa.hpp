@@ -42,6 +42,7 @@ public:
 signals:
     void vertifyCode(QByteArray/*url*/,QByteArray/*id*/);
     void sendDataFinished(bool ,QString);
+    void genImageContent(QString);
 public slots:
     void sendData(QString,QString,QString,QString,BaiDuVertifyCode);
 public:

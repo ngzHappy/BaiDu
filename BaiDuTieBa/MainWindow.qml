@@ -109,7 +109,6 @@ Rectangle{
                 onClicked: {
                     tSendDataID.enabled = false
                     vcCodeID.visible = false
-                    console.log("aaaa")
                     root.sendData( ttnameID.text,ttitleID.text,tlocalDirID.text,tcontentID.text )
                 }
             }

@@ -328,7 +328,7 @@ void BaiDuTieBa::imgtbs(
     std::weak_ptr<QNetworkReply> rp_(rpl);
     std::weak_ptr<BaiDuNetworkAccessManager> mn_( manager_ );
     rpl->connect( rpl.get(),&QNetworkReply::finished,
-        [ fun , rp_ ,fp , mn_ ](  ) {
+        [ fun , rp_ ,fp/*shared_ptr*/ , mn_ ](  ) {
         try {
             auto rp=rp_.lock(); auto mn=mn_.lock();
             cct::check_args<ArgError>(rp,"endl ... ",mn,"endl .... ");
@@ -372,7 +372,7 @@ void BaiDuTieBa::tbs(
     std::weak_ptr<QNetworkReply> rp_(rpl);
     std::weak_ptr<BaiDuNetworkAccessManager> mn_( manager_ );
     rpl->connect( rpl.get(),&QNetworkReply::finished,
-        [ fun , rp_ ,fp , mn_ ](  ) {
+        [ fun , rp_ ,fp/*shared_ptr*/ , mn_ ](  ) {
         try {
             auto rp=rp_.lock(); auto mn=mn_.lock();
             cct::check_args<ArgError>(rp,"endl ... ",mn,"endl .... ");
@@ -394,21 +394,24 @@ void BaiDuTieBa::tbs(
 namespace
 {
 QByteArray get_rand_name() {
+    /*
+    获得一个随机的图片名称
+    防止和谐
+    */
     constexpr const static char table_[]{
-        '0','1','2','3','X','Y','Z','W',
-        '4','5','6','7','T','N','V','Q',
-        '8','9','a','b','K','M','O','R',
-        'c','d','e','f','J','L','I','U',
+        'x','y','z','w','X','Y','Z','W',
+        't','n','v','q','T','N','V','Q',
+        'k','m','o','r','K','M','O','R',
+        'j','l','i','u','J','L','I','U',
     };
 
     enum {table_size_ = (sizeof(table_)/sizeof(char)) };
 
-    QByteArray ans("IMAGE_");
+    QByteArray ans("IMAGE");
     ans.reserve(32);
     const auto n=(rand()&7)+1;
     for (int i=0; i<n;++i) {
-        ans.push_back( table_[((rand())%table_size_ )] );
-        ans.push_back("_");
+        ans.push_back( table_[((rand())%table_size_ )] );  
     }
     return ans+".jpg";
 }
@@ -538,6 +541,7 @@ void BaiDuTieBaPrivate::image2html(
                         +QString( all_data )
                         );
                     auto ii=TieBaTextImageType( nullptr );
+                    ii.isImage = true;
                     ii.width = eng.evaluate(u8R"(iurl["info"]["fullpic_width"])").toString();
                     ii.height = eng.evaluate(u8R"(iurl["info"]["fullpic_height"])").toString();
                     ii.type = eng.evaluate(u8R"(iurl["info"]["pic_type"])").toString();
@@ -612,7 +616,9 @@ void BaiDuTieBaPrivate::images2html(
     auto ib = images_names_.cbegin();
     for (const auto & i:images_) {
         QString image_local_name__ = *ib;
-        image2html(fid_,i,[pack_,image_local_name__ ](TieBaTextImageType item, BaiDuFinishedCallBackPointer ) mutable {
+        image2html(fid_,i,[pack_,image_local_name__ ](
+            TieBaTextImageType item, 
+            BaiDuFinishedCallBackPointer ) mutable {
             item.localPath=std::shared_ptr<QString>( new QString(image_local_name__) );
             pack_->ans_data->push_back( item );
         },
@@ -645,8 +651,9 @@ void BaiDuTieBaPrivate::localTieBa2BaiDuTieBa(
     for ( auto & j:*ldata_ ) {
         if (j.isImage) {
             if (j.startsWith("http://")) { continue; }
-            about_post_images_.push_back( QImage(dir_+"/"+QString(j)));
-            about_to_post_names_.push_back(j);
+            QImage image__( dir_+"/"+QString(j) ) ;/*change here to add speed*/
+            about_post_images_.push_back( std::move( image__ ) );
+            about_to_post_names_.push_back( j );
         }
     }
 
@@ -654,14 +661,15 @@ void BaiDuTieBaPrivate::localTieBa2BaiDuTieBa(
         return fun(ldata_,fp);
     }
 
-    std::shared_ptr<TieBaFormatData> ans=TieBaFormatData::instance() ;
+    std::shared_ptr<TieBaFormatData> ans = TieBaFormatData::instance() ;
     *ans=*ldata_;//copy data
 
+    auto thisPointer = thisp ;
     images2html(
         fid_,
         about_to_post_names_,
         about_post_images_,
-        [ans,fun](
+        [ans, fun , thisPointer ](
         cct::List<TieBaTextImageType> html_images_,
         BaiDuFinishedCallBackPointer  fp
         ) mutable {
@@ -685,6 +693,16 @@ void BaiDuTieBaPrivate::localTieBa2BaiDuTieBa(
         }
 
         m.clear();
+        /*
+        */
+
+        {/*保存结果*/
+            auto thisp=thisPointer.lock();
+            if (thisp) {
+                QString ans_;QTextStream stream_(&ans_);
+                ans->write(stream_);thisp->genImageContent(ans_);
+            }
+        }
 
         fun( ans,fp );
 
@@ -701,6 +719,8 @@ namespace BaiDuTieBa__{
 std::recursive_mutex * mutex = nullptr ;
 /*操作系统回收资源*/
 std::map<QString,QByteArray> * fidMap = nullptr  ;
+/*操作系统回收资源*/
+QString * fidFileName = nullptr;
 
 void read() {
     auto dir_ = QCoreApplication::applicationDirPath();
@@ -711,9 +731,10 @@ void read() {
     }
 
     QString fileName(dir_+"/data/tid/tid.txt");
+    fidFileName = new auto( fileName );
     QFile file( fileName);
 
-    if (file.exists()) {
+    if ( file.exists() ) {
         file.open(QIODevice::ReadOnly);
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Version::Qt_5_5);
@@ -733,9 +754,9 @@ void read() {
 
 void write() {
     auto dir_ = QCoreApplication::applicationDirPath();
-    QString fileName(dir_+"/data/tid/tid.txt");
-    QFile file( fileName);
-    if (file.open(QIODevice::WriteOnly)) {
+   
+    QFile file( *fidFileName );
+    if ( file.open(QIODevice::WriteOnly) ) {
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Version::Qt_5_5);
         auto & fid= *fidMap ;
@@ -885,14 +906,22 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
     QByteArray about_post_;
     for (const auto & i: (*data) ) {
         if (i.isImage) {
+            /* 
+            %5B [
+            %3D =
+            %2F /
+            %5D ]
+            */
             QByteArray img__;
+            img__.append("%5Bbr%5D");
             img__.append("%5Bimg");
-            img__.append("+""pic_type%3D1");//type 1
+            img__.append("+""pic_type%3D1");//type 1 jpeg
             img__.append("+""width%3D"    +i.width );//
             img__.append("+""height%3D"   +i.height);//
             img__.append("%5D");
-            img__.append(i.toUtf8().toPercentEncoding()  );
+            img__.append( i.trimmed().toUtf8().toPercentEncoding()  );
             img__.append("%5B%2Fimg%5D");
+            img__.append("%5Bbr%5D");
             about_post_.append( img__  );
         }
         else {

@@ -94,7 +94,7 @@ void TieBaFormatData::read(QTextStream & stream ){
     }
 }
 
-void TieBaFormatData::write(QTextStream & stream ){
+void TieBaFormatData::write(QTextStream & stream ) const {
 
     for (const auto & i:*this) {
         if (i.isImage) {
@@ -127,7 +127,7 @@ void TieBaFormatData::read(const QString & fileName) {
 
 }
 
-void TieBaFormatData::write(const QString & fileName) {
+void TieBaFormatData::write(const QString & fileName) const {
 
     QFile file( fileName );
     if (false==file.open(QIODevice::WriteOnly)) { return; }
