@@ -10,7 +10,7 @@ Rectangle{
     id : vcCodeRoot
     objectName: "root"
     width : 240; height: 380;
-    color : Qt.rgba(0.1,0.1,0.1,0.1)
+    color : Qt.rgba(0.1,0.1,0.1,0.3)
     border.width: 0
 
     signal addItem( int itemID );
@@ -31,40 +31,40 @@ Rectangle{
 
             Image {
                 id: image_0
-                Layout.maximumHeight: 60
-                Layout.maximumWidth: 60
-                Layout.preferredHeight: 60
-                Layout.preferredWidth: 60
+                Layout.maximumHeight: 60;
+                Layout.maximumWidth: 60;
+                Layout.preferredHeight: 60;
+                Layout.preferredWidth: 60;
                 source: ""
                 cache : false
             }
 
             Image {
                 id: image_1
-                Layout.maximumHeight: 60
-                Layout.maximumWidth: 60
-                Layout.preferredHeight: 60
-                Layout.preferredWidth: 60
+                Layout.maximumHeight: 60;
+                Layout.maximumWidth: 60;
+                Layout.preferredHeight: 60;
+                Layout.preferredWidth: 60;
                 source: ""
                 cache : false
             }
 
             Image {
                 id: image_2
-                Layout.maximumHeight: 60
-                Layout.maximumWidth: 60
-                Layout.preferredHeight: 60
-                Layout.preferredWidth: 60
+                Layout.maximumHeight: 60;
+                Layout.maximumWidth: 60;
+                Layout.preferredHeight: 60;
+                Layout.preferredWidth: 60;
                 source: ""
                 cache : false
             }
 
             Image {
                 id: image_3
-                Layout.maximumHeight: 60
-                Layout.maximumWidth: 60
-                Layout.preferredHeight: 60
-                Layout.preferredWidth: 60
+                Layout.maximumHeight: 60;
+                Layout.maximumWidth: 60;
+                Layout.preferredHeight: 60;
+                Layout.preferredWidth: 60;
                 source: ""
                 cache : false
             }
@@ -77,10 +77,10 @@ Rectangle{
             height: 320
             source: "vctest.png"
             cache : false
-            Layout.maximumHeight: 320
-            Layout.maximumWidth: 240
-            Layout.preferredHeight: 320
-            Layout.preferredWidth: 240
+            Layout.maximumHeight: 320;
+            Layout.maximumWidth: 240;
+            Layout.preferredHeight: 320;
+            Layout.preferredWidth: 240;
 
             MouseArea{
                 id : vc_show_ID
@@ -156,13 +156,8 @@ Rectangle{
                 acceptedButtons: Qt.LeftButton
                 onClicked: { vcCodeRoot.addItem( 8 );   }
             }
-
         }
-
-
-
     }
-
 
 }
 

@@ -9,11 +9,15 @@ Rectangle{
 
     width : 512; height: 512;
 
+    BaiDuTieBaVertifyCode{
+        id : vcCodeID
+        z: 100
+        anchors.centerIn: parent
+        visible: false
+    }
 
     ColumnLayout {
         anchors.fill: parent
-        x: 40
-        y: 153
         spacing: 0
 
         RowLayout {
@@ -52,6 +56,27 @@ Rectangle{
 
             TextField {
                 id: ttitleID
+                Layout.fillWidth: true
+                placeholderText: ""
+            }
+        }
+
+        RowLayout {
+            spacing: 0
+
+            Text {
+                id: tlocalDirLabel
+                horizontalAlignment :Qt.AlignRight
+                text: qsTr("本地目录:")
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.maximumWidth: 64
+                Layout.minimumWidth: 64
+                Layout.preferredWidth: 64
+                font.pixelSize: 12
+            }
+
+            TextField {
+                id: tlocalDirID
                 Layout.fillWidth: true
                 placeholderText: ""
             }
