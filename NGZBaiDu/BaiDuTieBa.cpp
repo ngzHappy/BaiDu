@@ -407,11 +407,11 @@ QByteArray get_rand_name() {
 
     enum {table_size_ = (sizeof(table_)/sizeof(char)) };
 
-    QByteArray ans("IMAGE");
+    QByteArray ans("I_M_A_G_E)");
     ans.reserve(32);
     const auto n=(rand()&7)+1;
     for (int i=0; i<n;++i) {
-        ans.push_back( table_[((rand())%table_size_ )] );  
+        ans.push_back(table_[((rand())%table_size_)]);  ans.append('_');
     }
     return ans+".jpg";
 }
@@ -433,8 +433,8 @@ void BaiDuTieBaPrivate::image2html(
         );
 
     auto u= baiDuUser;
-    /*设置百度贴吧图像最大宽度为360*/
-    enum { MaxImageWidth = 360 };
+    /*设置百度贴吧图像最大宽度为1024*/
+    enum { MaxImageWidth = 1024 };
     if (image_.width() > MaxImageWidth ) {
         double image_width=MaxImageWidth;
         double image_height=image_.height()/double(image_.width())*image_width;
@@ -906,26 +906,54 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
     QByteArray about_post_;
     for (const auto & i: (*data) ) {
         if (i.isImage) {
-            /* 
-            %5B [
-            %3D =
-            %2F /
-            %5D ]
-            */
-            QByteArray img__;
-            img__.append("%5Bbr%5D");
-            img__.append("%5Bimg");
-            img__.append("+""pic_type%3D1");//type 1 jpeg
-            img__.append("+""width%3D"    +i.width );//
-            img__.append("+""height%3D"   +i.height);//
-            img__.append("%5D");
-            img__.append( i.trimmed().toUtf8().toPercentEncoding()  );
-            img__.append("%5B%2Fimg%5D");
-            img__.append("%5Bbr%5D");
-            about_post_.append( img__  );
+
+            double width_= i.width.toInt();
+            double height_=i.height.toInt();
+
+            if (width_ <= 360) {
+                /* %5B [%3D =%2F /%5D ] */
+                QByteArray img__;
+                img__.append("%5Bbr%5D");
+                img__.append("%5Bimg");
+                img__.append("+""pic_type%3D1");//type 1 jpeg
+                img__.append("+""width%3D"    +i.width );//
+                img__.append("+""height%3D"   +i.height);//
+                img__.append("%5D");
+                img__.append( i.trimmed().toUtf8().toPercentEncoding()  );
+                img__.append("%5B%2Fimg%5D");
+                img__.append("%5Bbr%5D");
+                about_post_.append( img__  );
+            }
+            else {
+                height_/=width_; height_*=360;
+                QByteArray img__;
+                img__.append("%5Bbr%5D");
+                img__.append("%5Bimg");
+                img__.append("+""pic_type%3D1");//type 1 jpeg
+                img__.append("+" "width%3D" "360" );//
+                img__.append("+" "height%3D" + QString::number(int(height_+0.6666)) );//
+                img__.append("%5D");
+                img__.append( i.trimmed().toUtf8().toPercentEncoding()  );
+                img__.append("%5B%2Fimg%5D");
+                img__.append("%5Bbr%5D");
+                about_post_.append( img__  );
+            }
+                        
         }
         else {
-            about_post_.append( i.toUtf8().toPercentEncoding() );
+            int space_count_=1; int remove_cout=0;
+            QString _istr_ = i ; 
+            for (auto & i:_istr_) {  if (i==' ') { ++space_count_; ++remove_cout; }
+            else if (i==u'　') { ++remove_cout; space_count_+=2; } else { break;  } }
+            if (remove_cout) { _istr_=_istr_.mid(remove_cout); }
+            space_count_/=2;/*调整外观*/
+            if (space_count_) {
+                QByteArray space_("%E3%80%80");
+                about_post_.append(  space_.repeated(space_count_)+_istr_.toUtf8().toPercentEncoding() );
+            }
+            else {
+                about_post_.append( _istr_.toUtf8().toPercentEncoding() );
+            }
         }
     }
     return about_post_;
@@ -975,6 +1003,7 @@ void BaiDuTieBaPrivate::sendDetail(
             {"__type__","thread"},
         };
         postdata=toHtmlUrl(postdata,std::begin(post_),std::end(post_));
+        if ( vc.ans.isEmpty()==false ) { postdata.append("&vcode="+vc.ans); /*验证码*/ }
     }
     QNetworkRequest req(QUrl("http://tieba.baidu.com/f/commit/thread/add"));
     {
@@ -1037,14 +1066,16 @@ void BaiDuTieBaPrivate::sendDetail(
                 {"no":40,"err_code":40,"error":"","data":{"autoMsg":"","fid":2256767,"fname":"\u57ac","tid":0,"is_login":1,"content":"","vcode":{"need_vcode":1,"str_reason":"\u8bf7\u70b9\u51fb\u9a8c\u8bc1\u7801\u5b8c\u6210\u53d1\u8d34","captcha_vcode_str":"captchaservice3263343573514d4c58506d47427467306b4d49594d62306b2f482f533156707a506241615249423739662b326e46342b49714d542b342b6a6352465673794944336a32736e385476345969545a4736792b3352393943676c34686762647730777931772b76782b6459716f50477539343572446b574d6d6c41644b5378544e49345456706f70774b75326b7370476f6b554f546438396d73596d667772753233597776752b6962446255394a62566e4844512f4c356d3855324b75517076527857426e41546b485a4232596a7236514c5548597036614c30684c744e532f37326465434c62616b557955545761722b507a6d4e593037594b4c586a67682f44357a51744f494a6250744e674a6f79774b6b5648314a334d4c50786c744b44444b47484c4e39446c7533473770735077385754574b","captcha_code_type":4,"userstatevcode":0}}}
                 */
 
-                QString vcdoe = eng.evaluate(u8R"(jsvalue["data"]["vcode"]["captcha_vcode_str"])").toString();
-                if ( vcdoe.size() > 16 ) {
-                    /*验证码网址*/ /*验证码id*/
-                    const QByteArray id__=vcdoe.toUtf8();
-                    thisp->vertifyCode("http://tieba.baidu.com/cgi-bin/genimg?"+id__,id__);
-                    throw ArgError(QString::fromUtf8(u8"验证码") );
-                }
                 //qDebug()<<data_;
+                if (1 == eng.evaluate(u8R"(jsvalue["data"]["vcode"]["need_vcode"])").toInt32()) {
+                    QString vcdoe=eng.evaluate(u8R"(jsvalue["data"]["vcode"]["captcha_vcode_str"])").toString();
+                    if (vcdoe.size()>16) {
+                        /*验证码网址*/ /*验证码id*/
+                        const QByteArray id__=vcdoe.toUtf8();
+                        thisp->vertifyCode("http://tieba.baidu.com/cgi-bin/genimg?"+id__,id__);
+                        //throw ArgError(QString::fromUtf8(u8"验证码"));
+                    }
+                }
 
                 auto i_ = baidutieba_::error_code.find(err_code_);
                 if ( i_!=baidutieba_::error_code.end() ) {
