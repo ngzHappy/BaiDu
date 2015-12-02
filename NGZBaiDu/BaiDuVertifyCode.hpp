@@ -14,3 +14,4 @@ typedef std::shared_ptr<BaiDuVertifyCode> BaiDuVertifyCodePointer;
 Q_DECLARE_METATYPE( BaiDuVertifyCode )
 Q_DECLARE_METATYPE( BaiDuVertifyCodePointer )
 #endif // BAIDUVERTIFYCODE_HPP
+ 

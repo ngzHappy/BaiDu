@@ -113,11 +113,12 @@ Rectangle{
                 }
             }
 
-            Text {
+            TextField {
                 id: tErrorStringID
                 text: qsTr("")
                 Layout.fillWidth: true
                 font.pixelSize: 22
+                readOnly : true
             }
         }
     }

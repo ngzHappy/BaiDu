@@ -24,6 +24,8 @@ public:
     QByteArray fid;
     BaiDuVertifyCode vcode;
     QString localDir;
+    QByteArray tid;
+    QByteArray floor_num;
     std::shared_ptr<TieBaFormatData> content;
 
     bool isValueSet= false;
@@ -45,6 +47,7 @@ signals:
     void genImageContent(QString);
 public slots:
     void sendData(QString,QString,QString,QString,BaiDuVertifyCode);
+    void postData(QString tid,QString tlocal,QString tbdata,BaiDuVertifyCode vc);
 public:
     bool onDestory() const volatile { return isOnDestory.load(); }
 
@@ -53,10 +56,32 @@ public:
         QString/*title*/,
         QByteArray/*data*/,
         QByteArray/*tbs*/,
-        BaiDuVertifyCode,
+        BaiDuVertifyCode/*vcode*/,
         QByteArray/*fid*/,
+        QByteArray/*tid*/,
+        QByteArray/*floor num*/,
         std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> ,
-        BaiDuFinishedCallBackPointer );/*发帖实现细节*/
+        BaiDuFinishedCallBackPointer 
+        );/*发帖实现细节*/
+
+    void sendDetail(
+        QString/*tbname*/ a,
+        QString/*title*/ b,
+        QByteArray/*data*/c,
+        QByteArray/*tbs*/d,
+        BaiDuVertifyCode e ,
+        QByteArray/*fid*/f,
+        std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> g,
+        BaiDuFinishedCallBackPointer h)/*发帖实现细节*/ {
+        return sendDetail(std::move(a),std::move(b),std::move(c),std::move(d) ,
+            std::move(e),std::move(f),"0","0",std::move(g),std::move(h)
+            );
+    }
+
+    void post( 
+        std::shared_ptr< SendTieBaDataPack > ,
+        std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>  ,
+        BaiDuFinishedCallBackPointer );/*发帖*/
 
     void send( 
         std::shared_ptr< SendTieBaDataPack > ,
