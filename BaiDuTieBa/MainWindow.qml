@@ -11,6 +11,7 @@ Rectangle{
     objectName: "MainWindowRoot"
     width : 512; height: 512;
 
+    signal postData( string tid ,string tlocal,string tdata  )
     signal sendData( string ttname ,string ttitle ,string tlocal,string tdata  )
     function setContent( cvar_ ){ tcontentID.text = cvar_ }
     function sendFinished( isok,whynotok ){
@@ -70,6 +71,24 @@ Rectangle{
                 Layout.fillWidth: true
                 placeholderText: ""
             }
+
+            Text {
+                id: tidLabel
+                horizontalAlignment :Qt.AlignRight
+                text: qsTr("tid:")
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.maximumWidth: 64
+                Layout.minimumWidth: 64
+                Layout.preferredWidth: 64
+                font.pixelSize: 12
+            }
+
+            TextField {
+                id: tidID
+                Layout.fillWidth: true
+                placeholderText: "0"
+            }
+
         }
 
         RowLayout {
@@ -107,9 +126,16 @@ Rectangle{
                 text: qsTr("发帖")
                 Layout.preferredHeight: 24; Layout.preferredWidth: 128
                 onClicked: {
-                    tSendDataID.enabled = false
-                    vcCodeID.visible = false
-                    root.sendData( ttnameID.text,ttitleID.text,tlocalDirID.text,tcontentID.text )
+                    tidID.text = tidID.text.trim()
+                    if( (tidID.text.length  !== 0 ) && ( tidID.text != "0" ) ){
+                        tSendDataID.enabled = false
+                        vcCodeID.visible = false
+                        root.postData( tidID.text,tlocalDirID.text,tcontentID.text )
+                    }else{
+                        tSendDataID.enabled = false
+                        vcCodeID.visible = false
+                        root.sendData( ttnameID.text,ttitleID.text,tlocalDirID.text,tcontentID.text )
+                    }
                 }
             }
 

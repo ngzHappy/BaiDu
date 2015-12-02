@@ -65,7 +65,7 @@ public:
         }
 
         if ( cid>19 ) {
-            QImage ans = QImage( QSize(80,80) ,QImage::Format_ARGB32 ); 
+            QImage ans = QImage( QSize(80,80) ,QImage::Format_ARGB32 );
             ans.fill(QColor(0,0,0,0));
             if (size) { *size = QSize(80,80) ; } return ans;
         }
@@ -101,7 +101,7 @@ public:
 
 class MainWindow::ThisData {
 public:
-    TieBaImageProvider_ * images_; 
+    TieBaImageProvider_ * images_;
     BaiDuVertifyCode vertifyCode;
     QQuickItem * vertifyDialog = nullptr;
     std::vector< int > vertifyCodeAns ;
@@ -121,7 +121,7 @@ public:
     void nextKey() {
         constexpr const char  key_[]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
         enum { KEY_SIZE = (sizeof(key_)/sizeof(char)) };
-        if (++key_id>=KEY_SIZE) { key_id=0; }
+        if ((++key_id)>=KEY_SIZE) { key_id=0; }
         if (key_id<0) { key_id=0; }
         key=QString("key_")+QString(key_[key_id]);
     }
@@ -134,16 +134,16 @@ public:
         vertifyImages.push_back("image://vertifyImage/22/ab"+key);
         vertifyImages.push_back("image://vertifyImage/23/ab"+key);
         vertifyImages.push_back("image://vertifyImage/9/ab"+key);
-                                                                                                                   
-        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,0   ),Q_ARG(QVariant,vertifyImages[0]+key)); 
-        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,1   ),Q_ARG(QVariant,vertifyImages[1]+key)); 
-        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,2   ),Q_ARG(QVariant,vertifyImages[2]+key)); 
-        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,3   ),Q_ARG(QVariant,vertifyImages[3]+key)); 
-        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,4   ),Q_ARG(QVariant,vertifyImages[4]+key)); 
-                                                                                                                   
-    } 
 
-    void clear() { 
+        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,0   ),Q_ARG(QVariant,vertifyImages[0]+key));
+        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,1   ),Q_ARG(QVariant,vertifyImages[1]+key));
+        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,2   ),Q_ARG(QVariant,vertifyImages[2]+key));
+        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,3   ),Q_ARG(QVariant,vertifyImages[3]+key));
+        QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,4   ),Q_ARG(QVariant,vertifyImages[4]+key));
+
+    }
+
+    void clear() {
         images_->vimage=QImage();
         vertifyCodeAns.clear();
         vertifyCodeSet.clear();
@@ -156,7 +156,7 @@ public:
     }
 
     void showVertifyDialog() {
-        
+
         if (vertifyDialog==nullptr) { return; }
         updataVertifyImages();/**/
         QQmlProperty::write(vertifyDialog,"visible",true);
@@ -188,7 +188,7 @@ public:
         nextKey();
         if (vertifyDialog==nullptr) { return; }
         if (vertifyCodeSet.count(i)) { return; }
-        
+
         if (vertifyCodeAns.size()< 4) {
             //reset image
             vertifyCodeAns.push_back(i);
@@ -211,7 +211,7 @@ public:
                 case 1: QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,1),Q_ARG(QVariant,vertifyImages[1] )); break;
                 case 2: QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,2),Q_ARG(QVariant,vertifyImages[2] )); break;
                 case 3: QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,3),Q_ARG(QVariant,vertifyImages[3] )); break;
-                
+
             }
         }
     }
@@ -228,7 +228,7 @@ public:
                 case 1: QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,1),Q_ARG(QVariant,QString( "image://vertifyImage/100" ))); break;
                 case 2: QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,2),Q_ARG(QVariant,QString( "image://vertifyImage/100" ))); break;
                 case 3: QMetaObject::invokeMethod(vertifyDialog,"setItem",Q_ARG(QVariant,3),Q_ARG(QVariant,QString( "image://vertifyImage/100" ))); break;
- 
+
             }
         }
     }
@@ -239,7 +239,7 @@ void MainWindow::hideVertifyDialog() { thisd->hideVertifyDialog(); }
 void MainWindow::showVertifyDialog() { thisd->showVertifyDialog(); }
 
 MainWindow::MainWindow( )
-    : QQuickView( ){     
+    : QQuickView( ){
 
     thisd=new ThisData;
     tieba = std::make_shared< BaiDuTieBa >();
@@ -306,6 +306,19 @@ void MainWindow::postShow(){
     QMetaObject::invokeMethod(this, "show",Qt::QueuedConnection );
 }
 
+void MainWindow::post(QString a,QString b,QString c){
+    /*隐藏验证码dialog*/
+    hideVertifyDialog();
+    /*计算验证码*/
+    if (thisd->vertifyCode.id.size()>6) {
+        thisd->vertifyCode.ans = thisd->getVertifyCode() ;
+    }
+    /*发布帖子*/
+    if(tieba){tieba->post(a,b,c ,thisd->vertifyCode);}
+    /*清空验证码*/
+    thisd->clear();
+}
+
 /*发帖*/
 void MainWindow::send(QString a,QString b,QString c,QString d){
     /*隐藏验证码dialog*/
@@ -318,7 +331,7 @@ void MainWindow::send(QString a,QString b,QString c,QString d){
     if(tieba){tieba->send(a,b,c,d ,thisd->vertifyCode);}
     /*清空验证码*/
     thisd->clear();
-    
+
 }
 
 void MainWindow::updateVertifyImages() {
