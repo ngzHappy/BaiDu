@@ -46,3 +46,12 @@ NGZBaiDu/release/moc_BaiDuNetworkAccessManager.cpp
 NGZBaiDu/release/moc_PBaiduTieBa.cpp
 NGZBaiDu/release/moc_BaiDuTieBa.cpp
 NGZBaiDuTest/release/moc_PBaiduTieBa.cpp
+NGZBaiDuTest/debug/moc_PBaiduTieBa.cpp
+NGZBaiDuTest/debug/moc_BaiDuNetworkAccessManager.cpp
+NGZBaiDuTest/debug/moc_BaiDuTieBa.cpp
+NGZBaiDuTest/release/data/tid/tid.txt
+NGZBaiDuTest/debug/data/tid/tid.txt
+NGZBaiDuTest/release/qrc_MainWindow.cpp
+BaiDuTieBa/release/qrc_MainWindow.cpp
+BaiDuTieBa/debug/qrc_MainWindow.cpp
+NGZBaiDuTest/debug/qrc_MainWindow.cpp
