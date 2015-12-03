@@ -265,6 +265,8 @@ MainWindow::MainWindow( )
         if(root_ == nullptr ){return ;}
     }
 
+    connect(root_,SIGNAL(postData(QString,QString,QString)),
+        this,SLOT(post(QString,QString,QString)));
     connect( root_,SIGNAL(sendData(QString,QString,QString,QString)),
         this,SLOT(send(QString,QString,QString,QString))
         );
@@ -282,7 +284,8 @@ MainWindow::MainWindow( )
         thisd->showVertifyDialog();
     }
         );
-
+    connect( tieba.get(),&BaiDuTieBa::imageContentChanged,
+             this,[this](QString v){ this->setContent(v); });
     connect( thisd->vertifyDialog,SIGNAL(addItem(int) ),
         this,SLOT(_additem(int)) );
     connect( thisd->vertifyDialog,SIGNAL(removeItem() ),

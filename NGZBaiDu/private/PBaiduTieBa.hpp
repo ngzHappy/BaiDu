@@ -8,7 +8,7 @@
 #include <SharedFromSuper.hpp>
 #include "BaiDuFinishedCallBack.hpp"
 
-class NGZBAIDUSHARED_EXPORT SendTieBaDataPack : 
+class NGZBAIDUSHARED_EXPORT SendTieBaDataPack :
     public QObject,
     public BaiDuFinishedCallBack{
     Q_OBJECT
@@ -18,6 +18,13 @@ public:
     SendTieBaDataPack();
     ~SendTieBaDataPack();
 
+    enum Type {
+        THREAD_TIEBABAIDU,
+        REPLY_TIEBABAIDU,
+        UNKNOW_TIEBABAIDU
+    };
+
+    Type type=THREAD_TIEBABAIDU;
     QString tbname;
     QString ttitle;
     QByteArray tbs;
@@ -44,7 +51,7 @@ public:
 signals:
     void vertifyCode(QByteArray/*url*/,QByteArray/*id*/);
     void sendDataFinished(bool ,QString);
-    void genImageContent(QString);
+    void genImageContent( QString );
 public slots:
     void sendData(QString,QString,QString,QString,BaiDuVertifyCode);
     void postData(QString tid,QString tlocal,QString tbdata,BaiDuVertifyCode vc);
@@ -52,16 +59,17 @@ public:
     bool onDestory() const volatile { return isOnDestory.load(); }
 
     void sendDetail(
-        QString/*tbname*/,
-        QString/*title*/,
-        QByteArray/*data*/,
-        QByteArray/*tbs*/,
-        BaiDuVertifyCode/*vcode*/,
-        QByteArray/*fid*/,
-        QByteArray/*tid*/,
-        QByteArray/*floor num*/,
-        std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> ,
-        BaiDuFinishedCallBackPointer 
+        const SendTieBaDataPack::Type,
+        const QString/*tbname*/ & ,
+        const QString/*title*/ &  ,
+        const QByteArray/*data*/& ,
+        const QByteArray/*tbs*/&  ,
+        const BaiDuVertifyCode/*vcode*/ &,
+        const QByteArray/*fid*/ & ,
+        const QByteArray/*tid*/ & ,
+        const QByteArray/*floor num*/ &,
+        const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> & ,
+        BaiDuFinishedCallBackPointer
         );/*发帖实现细节*/
 
     void sendDetail(
@@ -73,17 +81,19 @@ public:
         QByteArray/*fid*/f,
         std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> g,
         BaiDuFinishedCallBackPointer h)/*发帖实现细节*/ {
-        return sendDetail(std::move(a),std::move(b),std::move(c),std::move(d) ,
+        return sendDetail(
+            SendTieBaDataPack::Type::THREAD_TIEBABAIDU,
+            std::move(a),std::move(b),std::move(c),std::move(d) ,
             std::move(e),std::move(f),"0","0",std::move(g),std::move(h)
             );
     }
 
-    void post( 
+    void post(
         std::shared_ptr< SendTieBaDataPack > ,
         std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>  ,
         BaiDuFinishedCallBackPointer );/*发帖*/
 
-    void send( 
+    void send(
         std::shared_ptr< SendTieBaDataPack > ,
         std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>  ,
         BaiDuFinishedCallBackPointer );/*发帖*/
@@ -97,17 +107,17 @@ public:
 
     void images2html(
         QByteArray /*fid*/ ,
-        QList<QString> , 
+        QList<QString> ,
         QList<QImage>,
         std::function<void(cct::List<TieBaTextImageType> &,BaiDuFinishedCallBackPointer)>,
         BaiDuFinishedCallBackPointer);
 
     void image2html(
-        QByteArray /*fid*/ , 
+        QByteArray /*fid*/ ,
         QImage,
         std::function<void(TieBaTextImageType,BaiDuFinishedCallBackPointer)> ,
         BaiDuFinishedCallBackPointer);
-    
+
     static QByteArray genPostData( std::shared_ptr<TieBaFormatData> );
     std::shared_ptr<BaiDuUser> baiDuUser;
     std::atomic<bool> isOnDestory{false};

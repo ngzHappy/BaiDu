@@ -4,7 +4,7 @@
 #include "ngzbaidu_global.hpp"
 #include "BaiDuVertifyCode.hpp"
 #include "BaiDuFinishedCallBack.hpp"
-#include "TieBaFormatData.hpp" 
+#include "TieBaFormatData.hpp"
 #include <QObject>
 #include <functional>
 #include <QImage>
@@ -24,7 +24,7 @@ public:
 public:
     std::shared_ptr<BaiDuUser> getBaiDuUser()const;
     void setBaiDuUser( std::shared_ptr<BaiDuUser> );
-        
+
     static void mouse_pwd(const QByteArray  now_ ,const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> &,BaiDuFinishedCallBackPointer  ) ;
     static void imgtbs(std::shared_ptr< BaiDuUser >,const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> &,BaiDuFinishedCallBackPointer );
     static void tbs(std::shared_ptr< BaiDuUser >,const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> &,BaiDuFinishedCallBackPointer );
@@ -35,6 +35,7 @@ signals:
     void post(QString/*tid*/,QString/*local*/,QString/*data*/,BaiDuVertifyCode);
     void finishedSend(bool,QString);
     void vertifyCode(QByteArray url_,QByteArray id_);
+    void imageContentChanged(QString);
 public slots:
 
 private:

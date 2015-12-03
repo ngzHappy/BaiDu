@@ -17,7 +17,7 @@
 #include <QDataStream>
 #include <QTextCodec>
 #include <QDebug>
-
+#include <fstream>
 namespace {
 
 QString operator""_qutf8(const char * d,std::size_t n) {
@@ -189,14 +189,16 @@ BaiDuTieBa::BaiDuTieBa(QObject *parent) :
 
     /*connect signals ans slot*/
     connect(this,&BaiDuTieBa::send,
-        thisp.get(),&BaiDuTieBaPrivate::sendData);
+        thisp.get(),&BaiDuTieBaPrivate::sendData ,Qt::QueuedConnection );
     connect(thisp.get(),&BaiDuTieBaPrivate::sendDataFinished,
-        this,&BaiDuTieBa::finishedSend
+        this,&BaiDuTieBa::finishedSend,Qt::QueuedConnection
         );
     connect(thisp.get(),&BaiDuTieBaPrivate::vertifyCode,
-        this,&BaiDuTieBa::vertifyCode );
+        this,&BaiDuTieBa::vertifyCode,Qt::QueuedConnection );
     connect(this,&BaiDuTieBa::post,
-        thisp.get(),&BaiDuTieBaPrivate::postData );
+        thisp.get(),&BaiDuTieBaPrivate::postData ,Qt::QueuedConnection );
+    connect(thisp.get(),&BaiDuTieBaPrivate::genImageContent,
+            this,&BaiDuTieBa::imageContentChanged ,Qt::QueuedConnection );
 }
 
 std::shared_ptr<BaiDuUser> BaiDuTieBa::getBaiDuUser()const {
@@ -275,7 +277,7 @@ BaiDuTieBaPrivate::~BaiDuTieBaPrivate(){
     isOnDestory.store(true);
 }
 
-SendTieBaDataPack::SendTieBaDataPack() {    
+SendTieBaDataPack::SendTieBaDataPack() {
 }
 
 void SendTieBaDataPack::finished(bool v,QString d) {
@@ -619,7 +621,7 @@ void BaiDuTieBaPrivate::images2html(
     for (const auto & i:images_) {
         QString image_local_name__ = *ib;
         image2html(fid_,i,[pack_,image_local_name__ ](
-            TieBaTextImageType item, 
+            TieBaTextImageType item,
             BaiDuFinishedCallBackPointer ) mutable {
             item.localPath=std::shared_ptr<QString>( new QString(image_local_name__) );
             pack_->ans_data->push_back( item );
@@ -756,7 +758,7 @@ void read() {
 
 void write() {
     auto dir_ = QCoreApplication::applicationDirPath();
-   
+
     QFile file( *fidFileName );
     if ( file.open(QIODevice::WriteOnly) ) {
         QDataStream stream(&file);
@@ -865,7 +867,7 @@ void BaiDuTieBa::fid(
                 std::cmatch match;
                 if (std::regex_search(begin,end,match,std::regex("PageData.forum"))) {
                     begin=match[0].second;
-                    if (std::regex_search(begin,end,match,std::regex(R"('id':)"))) {
+                    if (std::regex_search(begin,end,match,std::regex(R"([']?id[']?:)"))) {
                         begin=match[0].second;
                         QString ans;
                         for (; begin!=end; ++begin) {
@@ -941,11 +943,11 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
                 img__.append("%5Bbr%5D");
                 about_post_.append( img__  );
             }
-                        
+
         }
         else {
             int space_count_=1; int remove_cout=0;
-            QString _istr_ = i ; 
+            QString _istr_ = i ;
             for (auto & i:_istr_) {  if (i==' ') { ++space_count_; ++remove_cout; }
             else if (i==u'　') { ++remove_cout; space_count_+=2; } else { break;  } }
             if (remove_cout) { _istr_=_istr_.mid(remove_cout); }
@@ -962,17 +964,18 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
     return about_post_;
 }
 
-#define _zfunc  
+#define _zfunc
 void BaiDuTieBaPrivate::sendDetail(
-    QString/*tbname*/ tbname,
-    QString/*title*/ ttitle,
-    QByteArray/*data*/ data,
-    QByteArray/*tbs*/ tbs,
-    BaiDuVertifyCode vc,  
-    QByteArray/*fid*/ fid ,
-    QByteArray/**/   _tid ,
-    QByteArray/**/_floor_num ,
-    std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>   fun,
+    const SendTieBaDataPack::Type type,
+    const QString/*tbname*/& tbname,
+    const QString/*title*/& ttitle,
+    const QByteArray/*data*/& data,
+    const QByteArray/*tbs*/& tbs,
+    const BaiDuVertifyCode& vc,
+    const QByteArray/*fid*/& fid ,
+    const QByteArray/**/&  _tid ,
+    const QByteArray/**/&_floor_num ,
+    const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>  & fun,
     BaiDuFinishedCallBackPointer  fp) try{
 
     auto thisPointer = thisp.lock();
@@ -1009,12 +1012,27 @@ void BaiDuTieBaPrivate::sendDetail(
             {"mouse_pwd",mouse_pwd_},
             {"mouse_pwd_t",ctime_},
             {"mouse_pwd_isclick","0"},
-            {"__type__","thread"},
+            //{"__type__","thread"},
         };
         postdata=toHtmlUrl(postdata,std::begin(post_),std::end(post_));
+        switch (type) {
+            case SendTieBaDataPack::THREAD_TIEBABAIDU: { postdata.append("&__type__=""thread"); } break;
+            case SendTieBaDataPack::REPLY_TIEBABAIDU: { postdata.append("&__type__=""reply");}break;
+            case SendTieBaDataPack::UNKNOW_TIEBABAIDU: throw ArgError("unknow type"); break;
+            default:throw ArgError("unknow type");  break;
+        }
         if ( vc.ans.isEmpty()==false ) { postdata.append("&vcode="+vc.ans); /*验证码*/ }
     }
-    QNetworkRequest req(QUrl("http://tieba.baidu.com/f/commit/thread/add"));
+
+    QUrl url_0_;
+    //http://tieba.baidu.com/f/commit/post/add
+    //http://tieba.baidu.com/f/commit/thread/add
+    switch(type){
+        case SendTieBaDataPack::THREAD_TIEBABAIDU: { url_0_=QUrl("http://tieba.baidu.com/f/commit/thread/add");} break;
+        case SendTieBaDataPack::REPLY_TIEBABAIDU: {url_0_=QUrl("http://tieba.baidu.com/f/commit/post/add"); } break;
+    }
+
+    QNetworkRequest req( url_0_ );
     {
         static auto * tcodec=QTextCodec::codecForName("gbk");
         QByteArray gbk_tname=tcodec->fromUnicode(tbname ).toPercentEncoding();
@@ -1052,6 +1070,11 @@ void BaiDuTieBaPrivate::sendDetail(
             cct::check_args<ArgError>(!data_.isEmpty(),"endl");
 
             //qDebug()<<data_;
+
+            {
+                std::ofstream ofs( "last_reply_baidutieba.txt" );
+                if ( ofs.is_open() ) {ofs.write( data_.constBegin(),data_.size() );}
+            }
 
             QByteArray tid_;
             do{/**/
@@ -1096,7 +1119,8 @@ void BaiDuTieBaPrivate::sendDetail(
 
             }while(0);
 
-            if (fp) { fp->finished(true,""); }
+            /*完成发帖,返回tid*/
+            if (fp) { fp->finished(true,tid_ ); }
             return fun( tid_ ,fp ) ;
 
         }
@@ -1122,7 +1146,7 @@ void BaiDuTieBaPrivate::send(
     auto & ttitle=pack->ttitle;
     auto & tdata=pack->content;
     const auto __thisp = thisp.lock() ;
-    
+
     cct::check_args<ArgError>(
         !tbname.isEmpty(),"tbname is null",
         !ttitle.isEmpty(),"tbname is null",
@@ -1135,7 +1159,7 @@ void BaiDuTieBaPrivate::send(
     auto u= baiDuUser;
     cct::check_args<ArgError>(u,"baidu user is null");
     cct::check_args<ArgError>(u->isLogin() ,"baidu user is not login");
-    
+
     typedef BaiDuFinishedCallBackPointer EP;
     using namespace std;
     BaiDuTieBa::tbs(u,[ fun=move(fun) ,tdata=move(tdata) ,pack,u ](QByteArray tbs_,EP fp) mutable {
@@ -1213,6 +1237,45 @@ void BaiDuTieBaPrivate::sendData(
 
 }
 
+namespace {
+//PageData.thread = {        author: "xiao而部雨",        thread_id:4193212507,        title: "请问吧里的大神，明朝汉服抄袭韩服吗", reply_num:5, thread_type: "0",
+const char * gen_thread_data_(
+    const char * begin_,const char * end_,
+    QString & author,
+    QString & title ,
+    QString & reply_num
+    ) {
+
+    std::cmatch rans;
+    const char * pos_=begin_;
+    const static std::regex begin_reg(u8R"(PageData[.]thread)");
+    const static std::regex author_reg(u8R"_(author: "(.*?)", )_");
+    const static std::regex title_reg(u8R"_(title: "(.*?)", )_");
+    const static std::regex reply_num_reg(u8R"_(reply_num:[ ]*?([0-9]*?),)_");
+
+    if (std::regex_search(pos_,end_,rans,begin_reg)) {
+        pos_=rans[0].second;
+    }
+    else { throw ArgError("can not find PageData.thread"); }
+
+    if (std::regex_search(pos_,end_,rans,author_reg)) {
+        pos_=rans[0].second; author=QString::fromUtf8(rans[1].first,rans[1].length());
+    }
+    else { throw ArgError("can not find author"); }
+
+    if (std::regex_search(pos_,end_,rans,title_reg)) {
+        pos_=rans[0].second;title=QString::fromUtf8(rans[1].first,rans[1].length());
+    }
+    else { throw ArgError("can not find title"); }
+
+    if (std::regex_search(pos_,end_,rans,reply_num_reg)) {
+        pos_=rans[0].second;reply_num=QString::fromUtf8(rans[1].first,rans[1].length());
+    }
+    else { throw ArgError("can not find reply_num"); }
+    return pos_;
+}
+}
+
 void BaiDuTieBaPrivate::postData(
     QString tid,
     QString tlocal,
@@ -1272,6 +1335,16 @@ void BaiDuTieBaPrivate::postData(
                 const auto data_ = gzip::QCompressor::gzipDecompress( r->readAll() );
                 cct::check_args<ArgError>(!data_.isEmpty(),"can not fid the tid");
 
+                {
+                    QString author,title,reply_num;
+                    gen_thread_data_(
+                        data_.constBegin(),data_.constEnd(),
+                        author,title,reply_num
+                        );
+                    pack->ttitle=title;
+                    pack->floor_num=reply_num.toUtf8();
+                }
+
                 //"tieba.baidu.com/f?kw=%E8%9B%8A%E7%9C%9F%E4%BA%BA&ie=utf-8"
                 {//tbname
                     const char * begin=data_.constBegin();
@@ -1287,7 +1360,7 @@ void BaiDuTieBaPrivate::postData(
                         pack->tbname=QString::fromUtf8( ans.fromPercentEncoding( ans ) );
                     }
                     else {
-                        throw ArgError("tbname:");  
+                        throw ArgError("tbname:");
                     }
 
                 }
@@ -1298,7 +1371,7 @@ void BaiDuTieBaPrivate::postData(
                     std::cmatch match;
                     if (std::regex_search(begin,end,match,std::regex("PageData.forum"))) {
                         begin=match[0].second;
-                        if (std::regex_search(begin,end,match,std::regex(R"('id':)"))) {
+                        if (std::regex_search(begin,end,match,std::regex(R"([']?id[']?:)"))) {
                             begin=match[0].second;
                             QString ans;
                             for (; begin!=end; ++begin) {
@@ -1351,7 +1424,7 @@ void BaiDuTieBaPrivate::postData(
                 }
 
                 //style="margin-right:3px">74</span>回复贴，
-                {
+               /* {
                     const static std::regex reg(u8R"(([0-9]*)</span>回复贴)");
                     std::cmatch pagedata_ans;
                     if (std::regex_search(fileb,filee,pagedata_ans,reg)) {
@@ -1361,7 +1434,7 @@ void BaiDuTieBaPrivate::postData(
                     else {
                         throw ArgError(u8R"(can not find floor num )");
                     }
-                }
+                }*/
                 /*******************************************************/
                 thisPointer->post(pack,[pack](QByteArray tid_,EP) {
                     qDebug()<<tid_;
@@ -1377,7 +1450,6 @@ void BaiDuTieBaPrivate::postData(
     }
 }
 
-
 //tid floor_num
 #define _zfunc cct::FunctionType< decltype(&BaiDuTieBaPrivate::post ) >
 void BaiDuTieBaPrivate::post(
@@ -1390,6 +1462,8 @@ void BaiDuTieBaPrivate::post(
     auto & tbname=pack->tbname;
     auto & ttitle=pack->ttitle;
     auto & tdata=pack->content;
+    pack->type= SendTieBaDataPack::Type::REPLY_TIEBABAIDU ;
+
     const auto __thisp=thisp.lock();
 
     cct::check_args<ArgError>(
@@ -1428,6 +1502,7 @@ void BaiDuTieBaPrivate::post(
                 QByteArray about_post_=genPostData(tdata);
                 if (about_post_.isEmpty()) { if (fp) { fp->finished(false,"post data is null"); }return; }
                 thisp->sendDetail(
+                    SendTieBaDataPack::Type::REPLY_TIEBABAIDU,
                     pack->tbname, pack->ttitle,
                     about_post_, pack->tbs,
                     pack->vcode, pack->fid,pack->tid,

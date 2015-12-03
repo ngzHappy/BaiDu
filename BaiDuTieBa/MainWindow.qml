@@ -16,7 +16,7 @@ Rectangle{
     function setContent( cvar_ ){ tcontentID.text = cvar_ }
     function sendFinished( isok,whynotok ){
         tSendDataID.enabled = true
-        if( isok ){ tErrorStringID.text =qsTr("发帖成功"); }
+        if( isok ){ tErrorStringID.text =qsTr("发帖成功 : ")+whynotok /*tid*/ ; }
         else{ tErrorStringID.text = whynotok; }
     }
 
