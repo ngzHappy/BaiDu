@@ -24,6 +24,9 @@ int main(int argc, char *argv[])
     /*初始化opengl渲染环境*/
     if (argc>1) { QApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);/*Qt::AA_UseSoftwareOpenGL*/ }
     
+    MainWindow testMainWindow;
+    testMainWindow.show();
+
     /*主窗口*/
     MainWindow * mainWindow= new MainWindow;
     /*登录*/

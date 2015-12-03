@@ -114,9 +114,16 @@ Rectangle{
 
         TextArea {
             id: tcontentID
+            font.pointSize: 20
             Layout.fillHeight: true
             Layout.fillWidth: true
-
+            textFormat: TextEdit.PlainText
+            style: TextAreaStyle {
+                textColor: Qt.rgba(0,0,0,1)
+                selectionColor: "steelblue"
+                selectedTextColor: "#eee"
+                backgroundColor: Qt.rgba(0.1,0.1,0.6,0)
+            }
         }
 
         RowLayout {

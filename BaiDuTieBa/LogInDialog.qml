@@ -101,10 +101,11 @@ MouseArea {
                 }
 
                 TextField {
-                    id: passWordInput
-                    text: qsTr("")
-                    font.pixelSize: 12
-                    Layout.preferredWidth : root.width/2.5
+                    id: passWordInput;
+                    text: qsTr("");
+                    font.pixelSize: 12;
+                    Layout.preferredWidth : root.width/2.5;
+                    echoMode : TextInput.Password;
                 }
             }
 

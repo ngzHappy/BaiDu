@@ -48,11 +48,11 @@ int main(int argc, char *argv[]){
         if (islogin) {
             auto user_=dialog_login->getUser();
             dialog_login->setVisible(false);
-            dialog_login->deleteLater();
 
             /*主窗口*/
             mainWindow->setBaiDuUser(user_);
             mainWindow->show();
+            delete dialog_login;
 
             {//move
                 int x, y, w, h;

@@ -867,7 +867,7 @@ void BaiDuTieBa::fid(
                 std::cmatch match;
                 if (std::regex_search(begin,end,match,std::regex("PageData.forum"))) {
                     begin=match[0].second;
-                    if (std::regex_search(begin,end,match,std::regex(R"([']?id[']?:)"))) {
+                    if (std::regex_search(begin,end,match,std::regex(R"(['"]?id['"]?[ ]*:)"))) {
                         begin=match[0].second;
                         QString ans;
                         for (; begin!=end; ++begin) {
@@ -915,7 +915,11 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
             double width_= i.width.toInt();
             double height_=i.height.toInt();
 
-            if (width_ <= 360) {
+            /*百度最大图片宽度*/
+            constexpr static const int max_width_=560;
+            constexpr static const char * max_width_string="560";
+
+            if (width_ <= max_width_ ) {
                 /* %5B [%3D =%2F /%5D ] */
                 QByteArray img__;
                 img__.append("%5Bbr%5D");
@@ -930,13 +934,14 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
                 about_post_.append( img__  );
             }
             else {
-                height_/=width_; height_*=360;
+                height_/=width_; height_*=max_width_ ;
                 QByteArray img__;
                 img__.append("%5Bbr%5D");
                 img__.append("%5Bimg");
                 img__.append("+""pic_type%3D1");//type 1 jpeg
-                img__.append("+" "width%3D" "360" );//
-                img__.append("+" "height%3D" + QString::number(int(height_+0.6666)) );//
+                img__.append("+" "width%3D"   );//
+                img__.append( max_width_string );
+                img__.append("+" "height%3D" + QByteArray::number(int(height_+0.6666)) );//
                 img__.append("%5D");
                 img__.append( i.trimmed().toUtf8().toPercentEncoding()  );
                 img__.append("%5B%2Fimg%5D");
@@ -1249,15 +1254,16 @@ const char * gen_thread_data_(
     std::cmatch rans;
     const char * pos_=begin_;
     const static std::regex begin_reg(u8R"(PageData[.]thread)");
-    const static std::regex author_reg(u8R"_(author: "(.*?)", )_");
-    const static std::regex title_reg(u8R"_(title: "(.*?)", )_");
-    const static std::regex reply_num_reg(u8R"_(reply_num:[ ]*?([0-9]*?),)_");
+    const static std::regex author_reg(u8R"_(author[ ]*:[ ]*"(.*?)",)_");
+    const static std::regex title_reg(u8R"_(title[ ]*:[ ]*"(.*?)",)_");
+    const static std::regex reply_num_reg(u8R"_(reply_num[ ]*:[ ]*([0-9]*?),)_");
 
     if (std::regex_search(pos_,end_,rans,begin_reg)) {
         pos_=rans[0].second;
     }
     else { throw ArgError("can not find PageData.thread"); }
 
+    /*这个参数是无用的*/
     if (std::regex_search(pos_,end_,rans,author_reg)) {
         pos_=rans[0].second; author=QString::fromUtf8(rans[1].first,rans[1].length());
     }
@@ -1371,7 +1377,7 @@ void BaiDuTieBaPrivate::postData(
                     std::cmatch match;
                     if (std::regex_search(begin,end,match,std::regex("PageData.forum"))) {
                         begin=match[0].second;
-                        if (std::regex_search(begin,end,match,std::regex(R"([']?id[']?:)"))) {
+                        if (std::regex_search(begin,end,match,std::regex(R"(['"]?id['"]?[ ]*:)"))) {
                             begin=match[0].second;
                             QString ans;
                             for (; begin!=end; ++begin) {
@@ -1399,7 +1405,7 @@ void BaiDuTieBaPrivate::postData(
                     const static std::regex reg_pagedata(u8R"(var PageData)");std::cmatch pagedata_ans;
                     if ( std::regex_search(fileb,filee,pagedata_ans,reg_pagedata) ) {
                         auto b=pagedata_ans[0].second;
-                        const static std::regex tbs_reg(u8R"("tbs":)");
+                        const static std::regex tbs_reg(u8R"(["']tbs["'][ ]*:)");
                         if(std::regex_search( b,filee,pagedata_ans,tbs_reg)) {
                             b=pagedata_ans[0].second;
                             const static std::set<char> char_set{
