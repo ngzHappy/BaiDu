@@ -952,9 +952,9 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
         }
         else {
             int space_count_=1; int remove_cout=0;
-            QString _istr_ = i ;
-            for (auto & i:_istr_) {  if (i==' ') { ++space_count_; ++remove_cout; }
-            else if (i==u'　') { ++remove_cout; space_count_+=2; } else { break;  } }
+            QString _istr_ = i.toHtmlEscaped() ; 
+            for (auto & i_:_istr_) {  if (i_==' ') { ++space_count_; ++remove_cout; }
+            else if (i_==u'　') { ++remove_cout; space_count_+=2; } else { break;  } }
             if (remove_cout) { _istr_=_istr_.mid(remove_cout); }
             space_count_/=2;/*调整外观*/
             if (space_count_) {
