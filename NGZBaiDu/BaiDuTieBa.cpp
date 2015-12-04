@@ -922,7 +922,7 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
             if (width_ <= max_width_ ) {
                 /* %5B [%3D =%2F /%5D ] */
                 QByteArray img__;
-                img__.append("%5Bbr%5D");
+                //img__.append("%5Bbr%5D");
                 img__.append("%5Bimg");
                 img__.append("+""pic_type%3D1");//type 1 jpeg
                 img__.append("+""width%3D"    +i.width );//
@@ -936,7 +936,7 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
             else {
                 height_/=width_; height_*=max_width_ ;
                 QByteArray img__;
-                img__.append("%5Bbr%5D");
+                //img__.append("%5Bbr%5D");
                 img__.append("%5Bimg");
                 img__.append("+""pic_type%3D1");//type 1 jpeg
                 img__.append("+" "width%3D"   );//
@@ -951,19 +951,11 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
 
         }
         else {
-            int space_count_=1; int remove_cout=0;
-            QString _istr_ = i.toHtmlEscaped() ;
-            for (auto & i_:_istr_) {  if (i_==' ') { ++space_count_; ++remove_cout; }
-            else if (i_==u'　') { ++remove_cout; space_count_+=2; } else { break;  } }
-            if (remove_cout) { _istr_=_istr_.mid(remove_cout); }
-            space_count_/=2;/*调整外观*/
-            if (space_count_) {
-                QByteArray space_("%E3%80%80");
-                about_post_.append(  space_.repeated(space_count_)+_istr_.toUtf8().toPercentEncoding() );
-            }
-            else {
-                about_post_.append( _istr_.toUtf8().toPercentEncoding() );
-            }
+           
+            QString _istr_ = i.trimmed().toHtmlEscaped() ;
+            const static QByteArray space_("%E3%80%80""%E3%80%80");
+            about_post_.append( space_+_istr_.toUtf8().toPercentEncoding()+"%5Bbr%5D" );
+            
         }
     }
     return about_post_;
