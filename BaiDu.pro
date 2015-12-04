@@ -6,7 +6,7 @@ TEMPLATE = subdirs
 #sudo apt-get install cmake
 #download qca: http://delta.affinix.com/qca/
 #make && install qca
-
+#-DCMAKE_BUILD_TYPE=Debug -DCMAKE_BUILD_TYPE=Release
 
 #.subdir	Use the specified subdirectory instead of SUBDIRS value.
 #.file	Specify the subproject pro file explicitly. Cannot be used in conjunction with .subdir modifier.

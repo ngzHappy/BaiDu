@@ -11,7 +11,7 @@ int main()
     cout << "Hello World!" << endl;
     QString temp("aabbccdd");
 
-    char test[]="aabbccdd   ";
+    // char test[]="aabbccdd   ";
 
     auto ans = temp.toStdU16String();
     temp.fromStdU16String( boost::trim_right_copy( ans ) );
