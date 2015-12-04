@@ -38,4 +38,9 @@ LIBS += -L$$PROJECT_OUT_PATH -lNGZBaiDu
 RESOURCES += LoginInDialog.qrc \
     MainWindow.qrc
 
+unix {
+    QMAKE_LFLAGS += -Wl,-rpath .
+}
+
+
 

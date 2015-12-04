@@ -31,4 +31,6 @@ HEADERS +=$$PWD/Deque.hpp
 HEADERS +=$$PWD/Forward_list.hpp
 HEADERS +=$$PWD/List.hpp
 
-
+unix {
+    QMAKE_LFLAGS += -Wl,-rpath .
+}

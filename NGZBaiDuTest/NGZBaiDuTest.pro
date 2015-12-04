@@ -52,4 +52,6 @@ RESOURCES += $$PWD/../BaiDuTieBa/LoginInDialog.qrc \
 
 DISTFILES += $$PWD/../BaiDuTieBa/LogInDialog.qml
 
-
+unix {
+    QMAKE_LFLAGS += -Wl,-rpath .
+}

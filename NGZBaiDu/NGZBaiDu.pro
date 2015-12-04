@@ -39,6 +39,10 @@ INCLUDEPATH += $$PWD/../cct
 include( $$PWD/../out_path.pri )
 DESTDIR = $$PROJECT_OUT_PATH
 
+unix {
+    QMAKE_LFLAGS += -Wl,-rpath .
+}
+
 ###############
 
 
