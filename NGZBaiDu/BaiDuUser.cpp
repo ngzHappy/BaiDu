@@ -96,7 +96,7 @@ BaiDuUser::BaiDuUserPrivate::~BaiDuUserPrivate() {
 void BaiDuUser::BaiDuUserPrivate::setLogInPackData(BaiDuUserLoginPack * p) {
 
     p->baiduUserPrivate=thisPointer;
-    
+
 }
 
 bool BaiDuUser::isLogin() const { if (thisp) { return thisp->isLogIn; }return false; }
@@ -656,7 +656,7 @@ void BaiDuUser::BaiDuUserPrivate::encryptRSA(
             QCA::EME_PKCS1v15_SSL
             );
 
-        {//deep copy data here 
+        {//deep copy data here
             QByteArray result(result_.constData(),result_.size());
             result=result.toBase64();
             result_final_=result.toPercentEncoding();

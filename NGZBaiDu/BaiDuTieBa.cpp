@@ -609,7 +609,7 @@ void BaiDuTieBaPrivate::images2html(
         int image_count;
         cct::List<TieBaTextImageType> ans_data;
         BaiDuFinishedCallBackPointer error_call_back;
-        std::function<void(cct::List<TieBaTextImageType>,BaiDuFinishedCallBackPointer)> call_back;
+        _zfunc::_r1 call_back;
     };
 
     auto pack_=std::make_shared<FinishedPack>();
@@ -952,7 +952,7 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
         }
         else {
             int space_count_=1; int remove_cout=0;
-            QString _istr_ = i.toHtmlEscaped() ; 
+            QString _istr_ = i.toHtmlEscaped() ;
             for (auto & i_:_istr_) {  if (i_==' ') { ++space_count_; ++remove_cout; }
             else if (i_==u'　') { ++remove_cout; space_count_+=2; } else { break;  } }
             if (remove_cout) { _istr_=_istr_.mid(remove_cout); }
@@ -1035,6 +1035,7 @@ void BaiDuTieBaPrivate::sendDetail(
     switch(type){
         case SendTieBaDataPack::THREAD_TIEBABAIDU: { url_0_=QUrl("http://tieba.baidu.com/f/commit/thread/add");} break;
         case SendTieBaDataPack::REPLY_TIEBABAIDU: {url_0_=QUrl("http://tieba.baidu.com/f/commit/post/add"); } break;
+        case SendTieBaDataPack::UNKNOW_TIEBABAIDU:break;
     }
 
     QNetworkRequest req( url_0_ );

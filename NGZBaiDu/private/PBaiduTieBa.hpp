@@ -109,7 +109,7 @@ public:
         QByteArray /*fid*/ ,
         QList<QString> ,
         QList<QImage>,
-        std::function<void(cct::List<TieBaTextImageType> &,BaiDuFinishedCallBackPointer)>,
+        std::function<void(cct::List<TieBaTextImageType> ,BaiDuFinishedCallBackPointer)>,
         BaiDuFinishedCallBackPointer);
 
     void image2html(
