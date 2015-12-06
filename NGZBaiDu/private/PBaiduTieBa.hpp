@@ -53,6 +53,7 @@ signals:
     void sendDataFinished(bool ,QString);
     void genImageContent( QString );
 public slots:
+    void sign(QString);
     void sendData(QString,QString,QString,QString,BaiDuVertifyCode);
     void postData(QString tid,QString tlocal,QString tbdata,BaiDuVertifyCode vc);
 public:

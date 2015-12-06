@@ -46,7 +46,9 @@ BaiDuUser::BaiDuUserPrivate::BaiDuUserPrivate(std::shared_ptr<BaiDuUserPrivate> 
     thisPointer(o) {
     this->__all__bits__=char(0);
     manager=std::make_shared<BaiDuUserLoginNetworkAccessManager>(nullptr);
-    userAgent="Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko";
+    //userAgent="Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko";
+    isPhone=true;
+    userAgent="Mozilla/5.0 (Linux; U; Android 4.4.4; zh-cn; HTC D820u Build/KTU84P) AppleWebKit/534.24 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.24 T5/2.0 baidubrowser/5.3.4.0 (Baidu; P1 4.4.4)";
 }
 
 BaiDuUserLoginPack::BaiDuUserLoginPack(QObject * o)

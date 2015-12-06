@@ -199,6 +199,8 @@ BaiDuTieBa::BaiDuTieBa(QObject *parent) :
         thisp.get(),&BaiDuTieBaPrivate::postData ,Qt::QueuedConnection );
     connect(thisp.get(),&BaiDuTieBaPrivate::genImageContent,
             this,&BaiDuTieBa::imageContentChanged ,Qt::QueuedConnection );
+    connect(this,&BaiDuTieBa::sign,thisp.get(),&BaiDuTieBaPrivate::sign);
+
 }
 
 std::shared_ptr<BaiDuUser> BaiDuTieBa::getBaiDuUser()const {
@@ -839,7 +841,8 @@ void BaiDuTieBa::fid(
     QUrl url(url_);
     QNetworkRequest req(url);
 
-    req.setRawHeader("User-Agent", u->getUserAgent().first );
+    auto user_agent=u->getUserAgent();
+    req.setRawHeader("User-Agent", user_agent.first );
     req.setRawHeader("Accept-Encoding", "gzip, deflate");
     req.setRawHeader("Connection", "keep-alive");
     req.setRawHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
@@ -850,8 +853,9 @@ void BaiDuTieBa::fid(
     std::weak_ptr< BaiDuNetworkAccessManager > wm(m);
     m->addReply(rp);
 
+    bool isPhone_=user_agent.second;
     r->connect(r,&QNetworkReply::finished,
-        [tbname,wr,wm,fun,fp]() {
+        [isPhone_,tbname,wr,wm,fun,fp]() {
         auto r=wr.lock();
         auto m=wm.lock();
         try {
@@ -860,10 +864,24 @@ void BaiDuTieBa::fid(
             QByteArray ans=r->readAll();
             ans=gzip::QCompressor::gzipDecompress(ans);
             cct::check_args<ArgError>(!ans.isEmpty(),"can not find tieba ");
-
-            {
-                const char * begin=ans.constBegin();
-                const char * end=ans.constEnd();
+            
+            if ( isPhone_ ) {
+                const char * begin=ans.constBegin();const char * end=ans.constEnd();
+                //"fid" : "2256767",  
+                // var _sl = new SignArrow({            $el: $('#j_light_forum_top_area'),            conf : {                'likeOperateUrl' : _singConf.baseUrl + 'favolike',                'signOperateUrl' : _singConf.baseUrl + 'sign',                'firstLikeSucceedTip': '恭喜你成为本吧第'+ memberNum +'位会员。',                "baseUrl" : _singConf.baseUrl,                "is_sign": "0",                "is_like": "1",                "cur_score":"50",                "user_level":"5",                "ifLogin":true,                "levelup_score":"100",                "uid" : "172018404",                "fid" : "2256767",                "tbs" : "adad9e52bdb905671449364762",                "kw" : "垬",                'sign_dialog_title' : "签到神器",                'sign_dialog_content' : "启动贴吧客户端签到送4倍经验！",  
+                const static std::regex reg(u8R"(["']fid["'][ ]*:[ ]*["']([0-9]+)["'],)");
+                std::cmatch match;
+                if (std::regex_search(begin,end,match,reg)) {
+                    auto mans=match[1]; QByteArray ans(mans.first,mans.length());
+                    BaiDuTieBa__::inster(tbname,ans );
+                    fun(ans ,fp);
+                }
+                else {
+                    throw ArgError("phone fid can not find");
+                }
+            }
+            else {
+                const char * begin=ans.constBegin();const char * end=ans.constEnd();
                 std::cmatch match;
                 if (std::regex_search(begin,end,match,std::regex("PageData.forum"))) {
                     begin=match[0].second;
@@ -1307,8 +1325,9 @@ void BaiDuTieBaPrivate::postData(
         cct::check_args<ArgError>(m,"manager");
 
         QUrl url_(QString("http://tieba.baidu.com/p/")+tid.trimmed());
-        QNetworkRequest req(url_);
-        req.setRawHeader("User-Agent",u->getUserAgent().first);
+        QNetworkRequest req(url_);/*req.setRawHeader("User-Agent",u->getUserAgent().first);*/
+        /*固定下载桌面版本的网页进行分析*/
+        req.setRawHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko");
         req.setRawHeader("Accept-Encoding", "gzip, deflate");
         req.setRawHeader("Connection", "keep-alive");
         req.setRawHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
@@ -1523,6 +1542,74 @@ catch (const ArgError & e) {
     if (fp) { fp->finished(false,e.what()+ " " +__func__); }
 }
 #undef _zfunc
+
+void BaiDuTieBaPrivate::sign(QString tbname )try {
+    tbname=tbname.trimmed().toLower();
+    cct::check_args<ArgError>(!tbname.isEmpty(),"tbname is null");
+    auto u=this->baiDuUser;
+    cct::check_args<ArgError>(u,"baidu user is null");
+    cct::check_args<ArgError>(u->isLogin(),"baidu user is not login");
+    //不判断是否签到和是否签到成功
+
+    BaiDuFinishedCallBackPointer null_;
+    std::weak_ptr<BaiDuUser> wu(u);
+    BaiDuTieBa::tbs(u,[ wu,tbname ](QByteArray tbs_, BaiDuFinishedCallBackPointer ) {
+        auto u=wu.lock();
+        try {
+            cct::check_args<ArgError>(u,"user is null");
+            auto m = u->getManager();
+            cct::check_args<ArgError>(m,"manager is null");
+            const static QUrl url_("http://tieba.baidu.com/sign/add");
+            QNetworkRequest req_(url_);
+            /*set req*/
+            {
+                req_.setRawHeader("User-Agent", u->getUserAgent().first );
+                req_.setRawHeader("Host", "tieba.baidu.com");
+                req_.setRawHeader("Accept", "application/json, text/javascript, */*; q=0.01");
+                req_.setRawHeader("Accept-Language", "zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3");
+                req_.setRawHeader("Accept-Encoding", "gzip, deflate");
+                req_.setRawHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+                req_.setRawHeader("X-Requested-With", "XMLHttpRequest");
+                req_.setRawHeader("Pragma", "no-cache");
+                req_.setRawHeader("Cache-Control", "no-cache");
+                req_.setHeader(QNetworkRequest::CookieHeader, u->getAllCookies() );
+            }
+            QByteArray post_data_;
+            /*set post data*/
+            {
+                post_data_="ie=utf-8";
+                auto tbn=tbname.toUtf8().toPercentEncoding();
+                post_data_.append("&kw="+tbn );
+                post_data_.append("&tbs="+tbs_);
+            }
+            auto r = m->post(req_,post_data_);
+            std::weak_ptr<BaiDuNetworkAccessManager> wm(m);
+            std::shared_ptr<QNetworkReply> rep(r,[](auto d) {d->deleteLater(); });
+            std::weak_ptr<QNetworkReply> wr(rep);
+            m->addReply(rep);
+            r->connect(r,&QNetworkReply::finished,
+                [wr,wm]() {
+                auto r=wr.lock(); auto m=wm.lock();
+                try {
+                    cct::check_args<ArgError>(r,"reply is null",m,"manager is null");
+                    m->removeReply(r);
+                    auto ans = gzip::QCompressor::gzipDecompress( r->readAll() );
+                    //qDebug()<<ans;
+                }
+                catch (const ArgError & e) {
+                    qDebug()<<e.what();
+                }
+            });
+        }
+        catch (const ArgError & e) {
+            qDebug()<<e.what();
+        }
+    },null_);
+
+}
+catch (const ArgError & e) {
+    qDebug()<<__func__<<e.what();
+}
 
 /*
  * endl of the file

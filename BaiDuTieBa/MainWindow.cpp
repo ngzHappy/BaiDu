@@ -284,6 +284,7 @@ MainWindow::MainWindow( )
         thisd->showVertifyDialog();
     }
         );
+    connect(root_,SIGNAL(signData(QString)),this,SLOT(sign(QString)));
     connect( tieba.get(),&BaiDuTieBa::imageContentChanged,
              this,[this](QString v){ this->setContent(v); });
     connect( thisd->vertifyDialog,SIGNAL(addItem(int) ),
@@ -344,5 +345,7 @@ void MainWindow::updateVertifyImages() {
 MainWindow::~MainWindow(){
     delete thisd;
 }
+
+void MainWindow::sign(QString tbn){if(tieba){tieba->sign(tbn);}}
 
 /**/

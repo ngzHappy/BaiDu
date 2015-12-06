@@ -11,6 +11,7 @@ Rectangle{
     objectName: "MainWindowRoot"
     width : 512; height: 512;
 
+    signal signData( string ttbname );
     signal postData( string tid ,string tlocal,string tdata  )
     signal sendData( string ttname ,string ttitle ,string tlocal,string tdata  )
     function setContent( cvar_ ){ tcontentID.text = cvar_ }
@@ -131,7 +132,7 @@ Rectangle{
             Button{
                 id :tSendDataID
                 text: qsTr("发帖")
-                Layout.preferredHeight: 24; Layout.preferredWidth: 128
+                Layout.preferredHeight: 24; Layout.preferredWidth: 64
                 onClicked: {
                     tidID.text = tidID.text.trim()
                     if( (tidID.text.length  !== 0 ) && ( tidID.text != "0" ) ){
@@ -144,6 +145,13 @@ Rectangle{
                         root.sendData( ttnameID.text,ttitleID.text,tlocalDirID.text,tcontentID.text )
                     }
                 }
+            }
+
+            Button{
+                id :tSignID
+                text: qsTr("签到")
+                Layout.preferredHeight: 24; Layout.preferredWidth: 64
+                onClicked: { root.signData( ttnameID.text ) ; }
             }
 
             TextField {

@@ -31,6 +31,7 @@ public:
     static void fid(std::shared_ptr< BaiDuUser >,QString /*贴吧名字*/ ,const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> &,BaiDuFinishedCallBackPointer );
 
 signals:
+    void sign(QString/*tbname*/);
     void send(QString/*tbname*/,QString/*tbtitle*/,QString/*local*/,QString/*data*/,BaiDuVertifyCode);
     void post(QString/*tid*/,QString/*local*/,QString/*data*/,BaiDuVertifyCode);
     void finishedSend(bool,QString);
