@@ -20,7 +20,8 @@
 #include <sstream>
 #include <QUrl>
 #include <set>
-
+#include <QTimer>
+#include <algorithm>
 namespace {
 
 class TieBaImageProvider_ : public QQuickImageProvider {
@@ -104,6 +105,7 @@ public:
     TieBaImageProvider_ * images_;
     BaiDuVertifyCode vertifyCode;
     QQuickItem * vertifyDialog = nullptr;
+    QQuickItem * content = nullptr ;
     std::vector< int > vertifyCodeAns ;
     std::vector< QString > vertifyImages ;
     QString key; int key_id;
@@ -263,6 +265,8 @@ MainWindow::MainWindow( )
         thisd->vertifyDialog = qobject_cast<QQuickItem * >(obj);
         root_ = item_;
         if(root_ == nullptr ){return ;}
+        obj=item_->findChild<QObject *>("tcontentID");
+        thisd->content = qobject_cast<QQuickItem * >(obj);
     }
 
     connect(root_,SIGNAL(postData(QString,QString,QString)),
@@ -284,7 +288,7 @@ MainWindow::MainWindow( )
         thisd->showVertifyDialog();
     }
         );
-    connect(root_,SIGNAL(signData(QString)),this,SLOT(sign(QString)));
+    connect(root_,SIGNAL(signData()),this,SLOT(sign()));
     connect( tieba.get(),&BaiDuTieBa::imageContentChanged,
              this,[this](QString v){ this->setContent(v); });
     connect( thisd->vertifyDialog,SIGNAL(addItem(int) ),
@@ -345,7 +349,40 @@ void MainWindow::updateVertifyImages() {
 MainWindow::~MainWindow(){
     delete thisd;
 }
+ 
+void MainWindow::sign( ){
+    auto tieba_=tieba;
+    if (tieba) {
+        QString lists_=QQmlProperty::read(thisd->content,"text").toString();
+        QTextStream stream(&lists_);
+        std::list<QString> about_sign_;
+        while (stream.atEnd()==false) {
+            auto line_ = stream.readLine();line_=line_.trimmed();
+            if ( line_.isEmpty()==false ) {
+                about_sign_.push_back(line_);
+            }
+        }
 
-void MainWindow::sign(QString tbn){if(tieba){tieba->sign(tbn);}}
+        {//sort and unique 
+            about_sign_.sort();
+            about_sign_.unique();
+        }
+
+        QTimer * sign_timer_ = new QTimer(this);
+        typedef void(QTimer::*TT)();
+        std::shared_ptr< std::list<QString> > about_sign(new std::list<QString>(std::move( about_sign_ )) );
+        connect( sign_timer_,TT(&QTimer::timeout),
+            sign_timer_,[ about_sign ,tieba_,sign_timer_ ]() mutable{
+            if (about_sign->empty()) { 
+                sign_timer_->stop();
+                sign_timer_->deleteLater();
+                return;
+            }
+            auto tbname_ = *(about_sign->begin());about_sign->pop_front();
+            tieba_->sign( tbname_ );
+        });
+        sign_timer_->start( 50 );/*每秒签到20次*/
+    }
+}
 
 /**/

@@ -23,7 +23,7 @@ public slots:
     void hideVertifyDialog();
     void showVertifyDialog();
     void updateVertifyImages();
-    void sign(QString);
+    void sign(  );
 signals:
     void setContent(QVariant);
     void sendFinished(QVariant,QVariant);

@@ -1593,7 +1593,7 @@ void BaiDuTieBaPrivate::sign(QString tbname )try {
                 try {
                     cct::check_args<ArgError>(r,"reply is null",m,"manager is null");
                     m->removeReply(r);
-                    auto ans = gzip::QCompressor::gzipDecompress( r->readAll() );
+                    //auto ans = gzip::QCompressor::gzipDecompress( r->readAll() );
                     //qDebug()<<ans;
                 }
                 catch (const ArgError & e) {

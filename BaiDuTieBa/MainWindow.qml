@@ -11,7 +11,7 @@ Rectangle{
     objectName: "MainWindowRoot"
     width : 512; height: 512;
 
-    signal signData( string ttbname );
+    signal signData(  );
     signal postData( string tid ,string tlocal,string tdata  )
     signal sendData( string ttname ,string ttitle ,string tlocal,string tdata  )
     function setContent( cvar_ ){ tcontentID.text = cvar_ }
@@ -115,6 +115,7 @@ Rectangle{
 
         TextArea {
             id: tcontentID
+            objectName: "tcontentID"
             font.pointSize: 20
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -151,7 +152,7 @@ Rectangle{
                 id :tSignID
                 text: qsTr("签到")
                 Layout.preferredHeight: 24; Layout.preferredWidth: 64
-                onClicked: { root.signData( ttnameID.text ) ; }
+                onClicked: { root.signData(  ) ; }
             }
 
             TextField {
