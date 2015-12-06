@@ -25,6 +25,7 @@ INCLUDEPATH += $$PWD/../NGZBaiDu
 INCLUDEPATH += $$PWD/../BaiDuTieBa
 
 SOURCES += main.cpp
+SOURCES += $$PWD/../NGZBaiDu/TextConvert.cpp
 SOURCES += $$PWD/../NGZBaiDu/BaiDuTieBa.cpp
 SOURCES += $$PWD/../NGZBaiDu/TieBaFormatData.cpp
 SOURCES += $$PWD/../NGZBaiDu/private/GZipCompressor.cpp

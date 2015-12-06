@@ -16,12 +16,14 @@ TEMPLATE = lib
 DEFINES += NGZBAIDU_LIBRARY
 
 SOURCES += NGZBaiDu.cpp
+SOURCES += TextConvert.cpp
 SOURCES += BaiDuTieBa.cpp
 SOURCES += TieBaFormatData.cpp
 SOURCES += BaiDuUser.cpp
 SOURCES += private/GZipCompressor.cpp
 
 HEADERS += $$PWD/NGZBaiDu.hpp
+HEADERS += $$PWD/TextConvert.hpp
 HEADERS += $$PWD/BaiDuNetworkAccessManager.hpp
 HEADERS += $$PWD/TieBaFormatData.hpp
 HEADERS += $$PWD/BaiDuTieBa.hpp
@@ -33,7 +35,6 @@ HEADERS += $$PWD/BaiDuUser.hpp
 HEADERS += $$PWD/private/PBaiDuUser.hpp
 HEADERS += $$PWD/ngzbaidu_global.hpp
 
-
 INCLUDEPATH += $$PWD/../cct
 
 include( $$PWD/../out_path.pri )
@@ -44,6 +45,5 @@ unix {
 }
 
 ###############
-
 
 

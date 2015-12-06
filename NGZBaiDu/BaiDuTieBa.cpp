@@ -18,6 +18,7 @@
 #include <QTextCodec>
 #include <QDebug>
 #include <fstream>
+#include "TextConvert.hpp"
 namespace {
 
 QString operator""_qutf8(const char * d,std::size_t n) {
@@ -167,6 +168,67 @@ const static std::map<int, const char *>  error_code{
 };
 }//namespace
 }//namespace
+
+namespace {
+//"[emotion+pic_type=1+width=30+height=30]http://tb2.bdstatic.com/tb/editor/images/face/i_f15.png?t=20140803[/emotion] 
+namespace private_{
+constexpr const char * baiDuTieBaEmotion_[]{
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f01.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f02.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f03.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f04.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f05.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f06.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f07.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f08.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f09.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f10.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f11.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f12.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f13.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f14.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f15.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f16.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f17.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f18.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f19.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f20.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f21.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f22.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f23.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f24.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f25.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f26.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f27.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f28.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f29.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f30.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f31.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f32.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f33.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f34.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f35.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f36.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f37.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f38.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f39.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f40.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f41.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f42.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f43.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f44.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f45.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f46.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f47.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f48.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f49.png%3Ft%3D20140803%5B%2Femotion%5D",
+    "%5Bemotion+pic_type%3D1+width%3D30+height%3D30%5Dhttp%3A%2F%2Ftb2.bdstatic.com%2Ftb%2Feditor%2Fimages%2Fface%2Fi_f50.png%3Ft%3D20140803%5B%2Femotion%5D",
+};
+
+constexpr const auto baiDuTieBaEmotionSize_=(sizeof(baiDuTieBaEmotion_)/sizeof(const char *));
+
+}
+}
 
 namespace {
 class ArgError {
@@ -923,6 +985,7 @@ void BaiDuTieBa::fid(
 }
 #undef _zfunc
 
+//TODO: gen post data
 QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data) {
     if (bool(data)==false) { return QByteArray(); }
     if (data->empty()) { return QByteArray(); }
@@ -971,8 +1034,19 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
         else {
            
             QString _istr_ = i.trimmed().toHtmlEscaped() ;
-            const static QByteArray space_("%E3%80%80""%E3%80%80");
-            about_post_.append( space_+_istr_.toUtf8().toPercentEncoding()+"%5Bbr%5D" );
+            {//简体字转繁体字
+                QString __istr__; __istr__.reserve( _istr_.size() );
+                for ( const auto & j:_istr_ ) {
+                    auto ans_ = TextConvert::c2tc( (char16_t)(j.unicode()) );
+                    __istr__.push_back( ans_[0] );
+                }
+                _istr_=__istr__;
+            }
+
+            //const QByteArray space_("%E3%80%80""%E3%80%80");
+            const QByteArray space_0( private_::baiDuTieBaEmotion_[ rand()%(private_::baiDuTieBaEmotionSize_) ] );
+            const QByteArray space_1( private_::baiDuTieBaEmotion_[ rand()%(private_::baiDuTieBaEmotionSize_) ] );
+            about_post_.append( space_0+space_1+_istr_.toUtf8().toPercentEncoding()+"%5Bbr%5D" );
             
         }
     }
