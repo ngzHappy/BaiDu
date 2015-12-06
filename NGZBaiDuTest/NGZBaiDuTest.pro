@@ -34,7 +34,8 @@ SOURCES += $$PWD/../BaiDuTieBa/MainWindow.cpp
 SOURCES += $$PWD/../NGZBaiDu/BaiDuUser.cpp
 SOURCES += $$PWD/../NGZBaiDu/NGZBaiDu.cpp
 
-HEADERS  += $$PWD/../BaiDuTieBa/LogInDialog.hpp
+HEADERS  += $$PWD/../BaiDuTieBa/LogInDialog.hpp \
+    TestData.hpp
 HEADERS  += $$PWD/../NGZBaiDu/BaiDuFinishedCallBack.hpp
 HEADERS  += $$PWD/../NGZBaiDu/BaiDuNetworkAccessManager.hpp
 HEADERS  += $$PWD/../NGZBaiDu/BaiDuTieBa.hpp
