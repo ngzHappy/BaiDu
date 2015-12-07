@@ -34,6 +34,7 @@ signals:
     void sign(QString/*tbname*/);
     void send(QString/*tbname*/,QString/*tbtitle*/,QString/*local*/,QString/*data*/,BaiDuVertifyCode);
     void post(QString/*tid*/,QString/*local*/,QString/*data*/,BaiDuVertifyCode);
+    void postUnderFloor(QString/*tid*/,QString/*pid*/,QString/*local*/,QString/*data*/,BaiDuVertifyCode);
     void finishedSend(bool,QString);
     void vertifyCode(QByteArray url_,QByteArray id_);
     void imageContentChanged(QString);

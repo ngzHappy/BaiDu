@@ -269,6 +269,8 @@ MainWindow::MainWindow( )
         thisd->content = qobject_cast<QQuickItem * >(obj);
     }
 
+    connect(root_,SIGNAL(postFloorData(QString,QString,QString,QString)),
+            this,SLOT(postFloorData(QString,QString,QString,QString)));
     connect(root_,SIGNAL(postData(QString,QString,QString)),
         this,SLOT(post(QString,QString,QString)));
     connect( root_,SIGNAL(sendData(QString,QString,QString,QString)),
@@ -349,7 +351,7 @@ void MainWindow::updateVertifyImages() {
 MainWindow::~MainWindow(){
     delete thisd;
 }
- 
+
 void MainWindow::sign( ){
     auto tieba_=tieba;
     if (tieba) {
@@ -363,7 +365,7 @@ void MainWindow::sign( ){
             }
         }
 
-        {//sort and unique 
+        {//sort and unique
             about_sign_.sort();
             about_sign_.unique();
         }
@@ -373,7 +375,7 @@ void MainWindow::sign( ){
         std::shared_ptr< std::list<QString> > about_sign(new std::list<QString>(std::move( about_sign_ )) );
         connect( sign_timer_,TT(&QTimer::timeout),
             sign_timer_,[ about_sign ,tieba_,sign_timer_ ]() mutable{
-            if (about_sign->empty()) { 
+            if (about_sign->empty()) {
                 sign_timer_->stop();
                 sign_timer_->deleteLater();
                 return;
@@ -383,6 +385,19 @@ void MainWindow::sign( ){
         });
         sign_timer_->start( 50 );/*每秒签到20次*/
     }
+}
+
+void MainWindow::postFloorData(QString a,QString b,QString c,QString d) {
+    /*隐藏验证码dialog*/
+    hideVertifyDialog();
+    /*计算验证码*/
+    if (thisd->vertifyCode.id.size()>6) {
+        thisd->vertifyCode.ans = thisd->getVertifyCode() ;
+    }
+    /*发布帖子*/
+    if(tieba){tieba->postUnderFloor(a,b,c,d ,thisd->vertifyCode);}
+    /*清空验证码*/
+    thisd->clear();
 }
 
 /**/

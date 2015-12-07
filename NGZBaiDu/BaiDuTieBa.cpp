@@ -261,8 +261,8 @@ BaiDuTieBa::BaiDuTieBa(QObject *parent) :
         thisp.get(),&BaiDuTieBaPrivate::postData ,Qt::QueuedConnection );
     connect(thisp.get(),&BaiDuTieBaPrivate::genImageContent,
             this,&BaiDuTieBa::imageContentChanged ,Qt::QueuedConnection );
-    connect(this,&BaiDuTieBa::sign,thisp.get(),&BaiDuTieBaPrivate::sign);
-
+    connect(this,&BaiDuTieBa::sign,thisp.get(),&BaiDuTieBaPrivate::sign,Qt::QueuedConnection);
+    connect(this,&BaiDuTieBa::postUnderFloor,thisp.get(),&BaiDuTieBaPrivate::postUnderFloorData,Qt::QueuedConnection);
 }
 
 std::shared_ptr<BaiDuUser> BaiDuTieBa::getBaiDuUser()const {
@@ -986,7 +986,10 @@ void BaiDuTieBa::fid(
 #undef _zfunc
 
 //TODO: gen post data
-QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data) {
+QByteArray BaiDuTieBaPrivate::genPostData(
+    SendTieBaDataPack::Type type,
+    std::shared_ptr<TieBaFormatData> data
+    ) {
     if (bool(data)==false) { return QByteArray(); }
     if (data->empty()) { return QByteArray(); }
     QByteArray about_post_;
@@ -1032,22 +1035,38 @@ QByteArray BaiDuTieBaPrivate::genPostData(std::shared_ptr<TieBaFormatData> data)
 
         }
         else {
-           
-            QString _istr_ = i.trimmed().toHtmlEscaped() ;
-            {//简体字转繁体字
-                QString __istr__; __istr__.reserve( _istr_.size() );
-                for ( const auto & j:_istr_ ) {
-                    auto ans_ = TextConvert::c2tc( (char16_t)(j.unicode()) );
-                    __istr__.push_back( ans_[0] );
+
+            std::list<QString > all_lists;
+            {
+                QString __tmp=i;
+                QTextStream stream( &__tmp );
+                while ( stream.atEnd()==false ) {
+                    all_lists.push_back( stream.readLine().trimmed() );
                 }
-                _istr_=__istr__;
             }
 
-            //const QByteArray space_("%E3%80%80""%E3%80%80");
-            const QByteArray space_0( private_::baiDuTieBaEmotion_[ rand()%(private_::baiDuTieBaEmotionSize_) ] );
-            const QByteArray space_1( private_::baiDuTieBaEmotion_[ rand()%(private_::baiDuTieBaEmotionSize_) ] );
-            about_post_.append( space_0+space_1+_istr_.toUtf8().toPercentEncoding()+"%5Bbr%5D" );
-            
+            for(auto  _istr_ : all_lists ){
+                {//简体字转繁体字
+                    QString __istr__; __istr__.reserve(_istr_.size());
+                    for (const auto & j:_istr_) {
+                        auto ans_=TextConvert::c2tc((char16_t)(j.unicode()));
+                        __istr__.push_back(ans_[0]);
+                    }
+                    _istr_=__istr__;
+                }
+
+                if ( type == SendTieBaDataPack::Type::REPLY_FLOOR_TIEBABAIDU ) {
+                    const QByteArray space_0( private_::baiDuTieBaEmotion_[ rand()%(private_::baiDuTieBaEmotionSize_) ] );
+                    const QByteArray space_1( private_::baiDuTieBaEmotion_[ rand()%(private_::baiDuTieBaEmotionSize_) ] );
+                    about_post_.append(space_0+space_1+_istr_.toUtf8().toPercentEncoding()+"%5Bbr%5D");
+                }
+                else {
+                    const QByteArray space_0("%E3%80%80");
+                    const QByteArray space_1("%E3%80%80");                    
+                    about_post_.append(space_0+space_1+_istr_.toUtf8().toPercentEncoding()+"%5Bbr%5D");
+                }
+            }
+
         }
     }
     return about_post_;
@@ -1064,6 +1083,7 @@ void BaiDuTieBaPrivate::sendDetail(
     const QByteArray/*fid*/& fid ,
     const QByteArray/**/&  _tid ,
     const QByteArray/**/&_floor_num ,
+    const QByteArray & _pid,
     const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)>  & fun,
     BaiDuFinishedCallBackPointer  fp) try{
 
@@ -1085,31 +1105,60 @@ void BaiDuTieBaPrivate::sendDetail(
             mouse_pwd_=ans;
         },fp);
         if (fp) { if (fp->hasError() ) { return; } }
-        std::pair<QByteArray,QByteArray> post_[]={
-            //{"ie","utf-8"},
-            {"kw", tbname.toUtf8().toPercentEncoding()},
-            {"fid",fid },/*fid is a num*/
-            {"tid",_tid}, /*发帖tid为0*/
-            {"vcode_md5", vc.id },/*验证码*/
-            {"floor_num",_floor_num},/*发帖floor_num为0*/
-            {"rich_text","1"},
-            {"tbs",tbs },
-            {"content", data },  /*数据*/
-            {"title"  , ttitle.toUtf8().toPercentEncoding() }, /*标题*/
-            {"prefix" ,  "" },
-            {"files","%5B%5D"},//[]
-            {"mouse_pwd",mouse_pwd_},
-            {"mouse_pwd_t",ctime_},
-            {"mouse_pwd_isclick","0"},
-            //{"__type__","thread"},
-        };
-        postdata=toHtmlUrl(postdata,std::begin(post_),std::end(post_));
-        switch (type) {
-            case SendTieBaDataPack::THREAD_TIEBABAIDU: { postdata.append("&__type__=""thread"); } break;
-            case SendTieBaDataPack::REPLY_TIEBABAIDU: { postdata.append("&__type__=""reply");}break;
-            case SendTieBaDataPack::UNKNOW_TIEBABAIDU: throw ArgError("unknow type"); break;
-            default:throw ArgError("unknow type");  break;
+        
+        if(type==SendTieBaDataPack::REPLY_FLOOR_TIEBABAIDU){
+            /*回复楼中楼*/
+            std::pair<QByteArray,QByteArray> post_[]={
+                //{"ie","utf-8"},
+                {"kw", tbname.toUtf8().toPercentEncoding()},
+                {"fid",fid },/*fid is a num*/
+                {"tid",_tid}, /*发帖tid为0*/
+                {"vcode_md5", vc.id },/*验证码*/
+                {"floor_num",_floor_num},/*发帖floor_num为0*/
+                {"quote_id",_pid},
+                {"rich_text","1"},
+                {"tbs",tbs },
+                {"content", data },  /*数据*/
+                {"lp_type","0"},
+                {"lp_sub_type","0"},
+                {"new_vcode","1"},
+                {"tag","11"},
+                {"repostid",_pid},
+                {"anonymous","0"}
+                //{"__type__","thread"},
+            };
+            postdata=toHtmlUrl(postdata,std::begin(post_),std::end(post_));
         }
+        else {
+            /*发帖或回复*/
+            std::pair<QByteArray,QByteArray> post_[]={
+                //{"ie","utf-8"},
+                {"kw", tbname.toUtf8().toPercentEncoding()},
+                {"fid",fid },/*fid is a num*/
+                {"tid",_tid}, /*发帖tid为0*/
+                {"vcode_md5", vc.id },/*验证码*/
+                {"floor_num",_floor_num},/*发帖floor_num为0*/
+                {"rich_text","1"},
+                {"tbs",tbs },
+                {"content", data },  /*数据*/
+                {"title"  , ttitle.toUtf8().toPercentEncoding() }, /*标题*/
+                {"prefix" ,  "" },
+                {"files","%5B%5D"},//[]
+                {"mouse_pwd",mouse_pwd_},
+                {"mouse_pwd_t",ctime_},
+                {"mouse_pwd_isclick","0"},
+                //{"__type__","thread"},
+            };
+            postdata=toHtmlUrl(postdata,std::begin(post_),std::end(post_));
+            switch (type) {
+                case SendTieBaDataPack::THREAD_TIEBABAIDU: { postdata.append("&__type__=""thread"); } break;
+                case SendTieBaDataPack::REPLY_TIEBABAIDU: { postdata.append("&__type__=""reply"); }break;
+                case SendTieBaDataPack::REPLY_FLOOR_TIEBABAIDU:break;
+                case SendTieBaDataPack::UNKNOW_TIEBABAIDU: throw ArgError("unknow type"); break;
+                default:throw ArgError("unknow type");  break;
+            }
+        }
+        /*验证码*/
         if ( vc.ans.isEmpty()==false ) { postdata.append("&vcode="+vc.ans); /*验证码*/ }
     }
 
@@ -1119,6 +1168,7 @@ void BaiDuTieBaPrivate::sendDetail(
     switch(type){
         case SendTieBaDataPack::THREAD_TIEBABAIDU: { url_0_=QUrl("http://tieba.baidu.com/f/commit/thread/add");} break;
         case SendTieBaDataPack::REPLY_TIEBABAIDU: {url_0_=QUrl("http://tieba.baidu.com/f/commit/post/add"); } break;
+        case SendTieBaDataPack::REPLY_FLOOR_TIEBABAIDU:{url_0_=QUrl("http://tieba.baidu.com/f/commit/post/add"); }break;
         case SendTieBaDataPack::UNKNOW_TIEBABAIDU:break;
     }
 
@@ -1273,7 +1323,7 @@ void BaiDuTieBaPrivate::send(
                     auto thisp=pack->thisp.lock();
                     if (bool(thisp)==false) { if (fp) { fp->finished(false,"endl"); }return; }
                     if (fp->hasError() ) { return; }
-                    QByteArray about_post_ = genPostData( tdata );
+                    QByteArray about_post_ = genPostData(pack->type, tdata );
                     if (about_post_.isEmpty()) { if (fp) { fp->finished(false,"post data is null"); }return; }
                     thisp->sendDetail(pack->tbname,pack->ttitle,about_post_,
                         pack->tbs,pack->vcode,pack->fid,fun ,fp);
@@ -1367,24 +1417,8 @@ const char * gen_thread_data_(
 }
 }
 
-void BaiDuTieBaPrivate::postData(
-    QString tid,
-    QString tlocal,
-    QString tbdata,
-    BaiDuVertifyCode vc) {
-
-    auto item=TieBaFormatData::instance();
-    QTextStream stream(&tbdata);
-    item->read(stream);
-
+void BaiDuTieBaPrivate::_private_postData(std::shared_ptr<SendTieBaDataPack> pack) {
     typedef BaiDuFinishedCallBackPointer EP;
-    auto pack=std::make_shared< SendTieBaDataPack >();
-    pack->thisp=this->thisp;
-    pack->content=item;
-    pack->tid=tid.toUtf8();
-    pack->localDir=tlocal;
-    pack->vcode=vc;
-
     connect(pack.get(),&SendTieBaDataPack::sendFinished,
         this,&BaiDuTieBaPrivate::sendDataFinished
         );
@@ -1397,10 +1431,10 @@ void BaiDuTieBaPrivate::postData(
         cct::check_args<ArgError>(u,"user",u->isLogin(),"user login");
         auto m=u->getManager();
         cct::check_args<ArgError>(m,"manager");
-
-        QUrl url_(QString("http://tieba.baidu.com/p/")+tid.trimmed());
+        const auto & tid=pack->tid;
+        QUrl url_( QString("http://tieba.baidu.com/p/")+tid );
         QNetworkRequest req(url_);/*req.setRawHeader("User-Agent",u->getUserAgent().first);*/
-        /*固定下载桌面版本的网页进行分析*/
+                                  /*固定下载桌面版本的网页进行分析*/
         req.setRawHeader("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko");
         req.setRawHeader("Accept-Encoding", "gzip, deflate");
         req.setRawHeader("Connection", "keep-alive");
@@ -1516,16 +1550,16 @@ void BaiDuTieBaPrivate::postData(
                 }
 
                 //style="margin-right:3px">74</span>回复贴，
-               /* {
-                    const static std::regex reg(u8R"(([0-9]*)</span>回复贴)");
-                    std::cmatch pagedata_ans;
-                    if (std::regex_search(fileb,filee,pagedata_ans,reg)) {
-                        if (pagedata_ans.size()<2) { throw ArgError(u8R"(can not find floor num )"); }
-                        pack->floor_num = QByteArray(pagedata_ans[1].first,pagedata_ans[1].length());
-                    }
-                    else {
-                        throw ArgError(u8R"(can not find floor num )");
-                    }
+                /* {
+                const static std::regex reg(u8R"(([0-9]*)</span>回复贴)");
+                std::cmatch pagedata_ans;
+                if (std::regex_search(fileb,filee,pagedata_ans,reg)) {
+                if (pagedata_ans.size()<2) { throw ArgError(u8R"(can not find floor num )"); }
+                pack->floor_num = QByteArray(pagedata_ans[1].first,pagedata_ans[1].length());
+                }
+                else {
+                throw ArgError(u8R"(can not find floor num )");
+                }
                 }*/
                 /*******************************************************/
                 thisPointer->post(pack,[pack](QByteArray tid_,EP) {
@@ -1540,6 +1574,35 @@ void BaiDuTieBaPrivate::postData(
     catch (const ArgError & e) {
         pack->finished(false,e.what());
     }
+
+
+}
+
+void BaiDuTieBaPrivate::postData(
+    QString tid,
+    QString tlocal,
+    QString tbdata,
+    BaiDuVertifyCode vc) {
+
+    auto item=TieBaFormatData::instance();
+    {
+        QTextStream stream(&tbdata);
+        item->read(stream);
+    }
+
+    auto pack=std::make_shared< SendTieBaDataPack >();
+    
+    {//set pack data
+        pack->thisp=this->thisp;
+        pack->content=item;
+        pack->tid=tid.toUtf8().trimmed();
+        pack->localDir=tlocal;
+        pack->vcode=vc;
+        pack->type= SendTieBaDataPack::Type::REPLY_TIEBABAIDU ;
+    }
+
+    _private_postData( pack );
+
 }
 
 //tid floor_num
@@ -1554,7 +1617,6 @@ void BaiDuTieBaPrivate::post(
     auto & tbname=pack->tbname;
     auto & ttitle=pack->ttitle;
     auto & tdata=pack->content;
-    pack->type= SendTieBaDataPack::Type::REPLY_TIEBABAIDU ;
 
     const auto __thisp=thisp.lock();
 
@@ -1591,14 +1653,13 @@ void BaiDuTieBaPrivate::post(
                 auto thisp=pack->thisp.lock();
                 if (bool(thisp)==false) { if (fp) { fp->finished(false,"endl"); }return; }
                 if (fp->hasError()) { return; }
-                QByteArray about_post_=genPostData(tdata);
+                QByteArray about_post_=genPostData(pack->type, tdata);
                 if (about_post_.isEmpty()) { if (fp) { fp->finished(false,"post data is null"); }return; }
                 thisp->sendDetail(
-                    SendTieBaDataPack::Type::REPLY_TIEBABAIDU,
-                    pack->tbname, pack->ttitle,
-                    about_post_, pack->tbs,
-                    pack->vcode, pack->fid,pack->tid,
-                    pack->floor_num,fun, fp);
+                    pack->type ,pack->tbname, pack->ttitle,
+                    about_post_, pack->tbs,pack->vcode, 
+                    pack->fid, pack->tid,pack->floor_num,
+                    pack->pid,fun, fp);
             },
                 fp);
 
@@ -1684,6 +1745,36 @@ void BaiDuTieBaPrivate::sign(QString tbname )try {
 catch (const ArgError & e) {
     qDebug()<<__func__<<e.what();
 }
+
+void BaiDuTieBaPrivate::postUnderFloorData(
+    QString tid ,
+    QString pid ,
+    QString tlocal ,
+    QString tbdata ,
+    BaiDuVertifyCode vc ) {
+
+    auto item=TieBaFormatData::instance();
+    {
+        QTextStream stream(&tbdata);
+        item->read(stream);
+    }
+
+    auto pack=std::make_shared< SendTieBaDataPack >();
+
+    {//set pack data
+        pack->thisp=this->thisp;
+        pack->content=item;
+        pack->tid=tid.toUtf8().trimmed();
+        pack->localDir=tlocal;
+        pack->vcode=vc;
+        pack->pid=pid.toUtf8().trimmed();
+        pack->type= SendTieBaDataPack::Type::REPLY_FLOOR_TIEBABAIDU ;
+    }
+
+    _private_postData( pack );
+
+}
+
 
 /*
  * endl of the file

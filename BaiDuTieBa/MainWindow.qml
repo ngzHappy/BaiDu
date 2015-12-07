@@ -12,6 +12,7 @@ Rectangle{
     width : 512; height: 512;
 
     signal signData(  );
+    signal postFloorData( string tid,string pid ,string tlocal,string tdata  )
     signal postData( string tid ,string tlocal,string tdata  )
     signal sendData( string ttname ,string ttitle ,string tlocal,string tdata  )
     function setContent( cvar_ ){ tcontentID.text = cvar_ }
@@ -80,12 +81,29 @@ Rectangle{
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 Layout.maximumWidth: 64
                 Layout.minimumWidth: 64
-                Layout.preferredWidth: 64
+                Layout.preferredWidth: 32
                 font.pixelSize: 12
             }
 
             TextField {
                 id: tidID
+                Layout.fillWidth: true
+                placeholderText: "0"
+            }
+
+            Text {
+                id: pidLabel
+                horizontalAlignment :Qt.AlignRight
+                text: qsTr("pid:")
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.maximumWidth: 64
+                Layout.minimumWidth: 64
+                Layout.preferredWidth: 32
+                font.pixelSize: 12
+            }
+
+            TextField {
+                id: pidID
                 Layout.fillWidth: true
                 placeholderText: "0"
             }
@@ -139,7 +157,12 @@ Rectangle{
                     if( (tidID.text.length  !== 0 ) && ( tidID.text != "0" ) ){
                         tSendDataID.enabled = false
                         vcCodeID.visible = false
-                        root.postData( tidID.text,tlocalDirID.text,tcontentID.text )
+                        if( (pidID.text.length  !== 0 ) && ( pidID.text != "0" ) ){
+                            root.postFloorData( tidID.text,pidID.text ,tlocalDirID.text,tcontentID.text )
+                        }
+                        else{
+                            root.postData( tidID.text,tlocalDirID.text,tcontentID.text )
+                        }
                     }else{
                         tSendDataID.enabled = false
                         vcCodeID.visible = false

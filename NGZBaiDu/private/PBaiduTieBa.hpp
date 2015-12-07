@@ -21,6 +21,7 @@ public:
     enum Type {
         THREAD_TIEBABAIDU,
         REPLY_TIEBABAIDU,
+        REPLY_FLOOR_TIEBABAIDU,
         UNKNOW_TIEBABAIDU
     };
 
@@ -32,6 +33,7 @@ public:
     BaiDuVertifyCode vcode;
     QString localDir;
     QByteArray tid;
+    QByteArray pid;
     QByteArray floor_num;
     std::shared_ptr<TieBaFormatData> content;
 
@@ -56,6 +58,9 @@ public slots:
     void sign(QString);
     void sendData(QString,QString,QString,QString,BaiDuVertifyCode);
     void postData(QString tid,QString tlocal,QString tbdata,BaiDuVertifyCode vc);
+    void postUnderFloorData(QString/*tid*/,QString/*pid*/,QString/*local*/,QString/*data*/,BaiDuVertifyCode);
+private:
+    void _private_postData( std::shared_ptr<SendTieBaDataPack> );
 public:
     bool onDestory() const volatile { return isOnDestory.load(); }
 
@@ -69,9 +74,24 @@ public:
         const QByteArray/*fid*/ & ,
         const QByteArray/*tid*/ & ,
         const QByteArray/*floor num*/ &,
+        const QByteArray/*pid*/&,
         const std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> & ,
         BaiDuFinishedCallBackPointer
         );/*发帖实现细节*/
+
+    void sendDetail(
+        const SendTieBaDataPack::Type a,
+        const QString/*tbname*/ & b,
+        const QString/*title*/ &  c,
+        const QByteArray/*data*/& d,
+        const QByteArray/*tbs*/&  e,
+        const BaiDuVertifyCode/*vcode*/ & f,
+        const QByteArray/*fid*/ & g,
+        const QByteArray/*tid*/ & h,
+        const QByteArray/*floor num*/ & i,
+        std::function<void(QByteArray,BaiDuFinishedCallBackPointer)> j,
+        BaiDuFinishedCallBackPointer k
+        ) {sendDetail(a,b,c,d,e,f,g,h,i,"",std::move(j),std::move(k)); }
 
     void sendDetail(
         QString/*tbname*/ a,
@@ -119,7 +139,7 @@ public:
         std::function<void(TieBaTextImageType,BaiDuFinishedCallBackPointer)> ,
         BaiDuFinishedCallBackPointer);
 
-    static QByteArray genPostData( std::shared_ptr<TieBaFormatData> );
+    static QByteArray genPostData( SendTieBaDataPack::Type, std::shared_ptr<TieBaFormatData> );
     std::shared_ptr<BaiDuUser> baiDuUser;
     std::atomic<bool> isOnDestory{false};
 

@@ -15,11 +15,12 @@ class MainWindow : public QQuickView
 public:
 
     MainWindow( );
-    ~MainWindow();
+    ~MainWindow(); 
 public slots:
     void postShow();
     void send(QString,QString,QString,QString);
     void post(QString,QString,QString);
+    void postFloorData(QString,QString,QString,QString);
     void hideVertifyDialog();
     void showVertifyDialog();
     void updateVertifyImages();
