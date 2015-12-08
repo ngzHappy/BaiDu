@@ -13,14 +13,15 @@ private:
     std::function<T> * _get(){ return this->get(); }
     typedef std::shared_ptr<  std::function<T> > Super;
 public:
-    template<typename ... Ta>
-    Function(Ta && ... args):Super(new class std::function<T>( std::forward<Ta>(args) ... ) ) {}
+    
     Function( decltype(nullptr) ) {}
     Function() :Super( new std::function<T> ){}
     Function(const Function &)=default;
     Function(Function &&)=default;
     Function(Super && o):Super( std::move(o) ) {}
     Function(const Super & o):Super( o ) {}
+    Function(const std::function<T> & f ):Super(new std::function<T>(f)) {}
+    Function(std::function<T> && f ):Super(new std::function<T>(std::move(f))) {}
 
     Function&operator=(const Function&)=default;
     Function&operator=(Function&&)=default;

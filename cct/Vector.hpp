@@ -13,6 +13,7 @@ namespace cct{
         typedef typename std::vector<T>::size_type size_type ;
         typedef std::shared_ptr< std::vector<T> > Super;
         const std::vector<T> * _get_const()const{return this->get();}
+        std::vector<T> * _get() { return this->get(); }
     public:
 
         Vector( decltype(nullptr) ) {}
@@ -27,8 +28,8 @@ namespace cct{
         Vector&operator=(const Vector&)=default;
         Vector&operator=(Vector&&)=default;
 
-        auto operator[]( size_type n )->decltype( this->get()->operator[](n)  ) {
-            return this->get()->operator[](n);
+        auto operator[]( size_type n )->decltype( this->_get()->operator[](n)  ) {
+            return this->_get()->operator[](n);
         }
 
         auto operator[]( size_type n )const ->decltype( this->_get_const()->operator[](n)  ) {
